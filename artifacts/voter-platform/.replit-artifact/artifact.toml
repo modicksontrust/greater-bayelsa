@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Greater Bayelsa Voter Platform"
+description = "A voter management platform for the Greater Bayelsa organization. Lets staff register and manage voter records with ward, LGA, and polling unit details, track outreach/contact status, search and filter voters, and view a dashboard of registration counts and breakdowns by area."
+version = "1.0.0"
+id = "artifacts/voter-platform"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25025
+
+[services.development]
+run = "pnpm --filter @workspace/voter-platform run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/voter-platform", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/voter-platform/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25025"
+BASE_PATH = "/"

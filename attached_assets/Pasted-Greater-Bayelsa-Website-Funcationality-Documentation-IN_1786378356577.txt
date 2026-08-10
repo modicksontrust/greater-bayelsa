@@ -1,0 +1,122 @@
+Greater Bayelsa Website Funcationality Documentation.
+ 
+INTRODUCTION:
+ 
+Greater Bayelsa Website is a website for a well structured grassroot based mobilization and capacity building NGO.
+ 
+App Functionalities
+ 
+● Attractive Landing page for the website that includes login and registeration buttons.
+● Contact and about-us page.
+● Livechat integration for customer in service.
+● Social media Buttons.
+● Blog page for posting news and other activities on the website.
+● Login and sign up pages
+● Login is only required for registered members
+● Registeration is only required for members available in website database.
+● During registration users are automatically recognized while typing mobile number or a vital information from the stored data in the database.
+● Users are only required to present mandatory VIN on voters card during registration , Phone number photo, occupation and address. The rest are optional ones like  are email etc .
+● Users are required to set new password during registeration.
+● Mobile friendly.
+● High security.
+● SEO Optimized.. 
+
+● User Dashboard:
+1. Users are recommended to finish updating profile if any information is further needed after registeration.
+2. In-App/Email Notification System for passing information to users from time to time.
+3. News carousal on dashboard to inform users about important information. E.g scholarship, events etc.
+4. Profile Update system.
+
+● Admin Dashoard: 
+1. Section to import voters information to database.
+2. Section to view imported voters.
+3. Role management to manage voters based based on their different voters information E.g polling unit.
+4. Admin creation section.
+5. Application Registered Voters Notification section for messaging users in bulk or single, either to their dashboard or email.
+6. Member Listing.
+ 
+
+
+GREATER BAYELSA PLATFORM FEATURES 
+
+1. A platform that allows membership registration with each person having their dashboard . In each person’s dashboard , they should have Calender of our activities, news updates, membership status, deadlines , etc
+2. We should be able to interact with and manage our members 
+3. People should be able to join our telegram groups and WhatsApp channels 
+4. Once people register, they are automatically put into their catchment areas( polling unit) and they should be automatically sent a welcome message from the organization and also introducing them to their Area shepherdry with the name of the leader of their unit. 
+5. Members should have their profile information inputed into the system during registration of their accounts including pictures. It’s mandatory 
+6. Members should have a unique ID code which is their membership number. It can be used to search them out anytime 
+7. A platform that allows us to have virtual video meetings with members at any level of categories. For example, the chairman or even the Governor can have an interaction with all members at once or at various levels. 
+8. Due payment reminder to our members who are active members 
+9. You have to select your membership categories while registering 
+10. The dashboard of the members should indicate their membership status whether full time member or part time member 
+11. It should have a way where  CRM that manages all members too so we don’t miss the birthdays of our members.
+12. We should be able to do opinion survey on our platforms to know what our members are thinking 
+13. We want to be able to track feedback from our members 
+14. Members are to pay dues so we want to track all those transactions for accountability 
+15. We want to be able to make payment to our members easily without going to the bank
+16. We want members to have a notification or segment dedicated to jobs and scholarship opportunities informations 
+17. Members should be able to contact their line manager easily 
+18. The admin should be able to assign the various admins at various levels of management 
+19. Members should be able to send a message to their line manager who will pass on to others for example, bereavement, security alert  notice ( I am not sure if this should come to HQ or just stay at their level)….
+
+Key points : 
+GREATER BAYELSA MESSAGE DIRECTION SUMMARY:
+
+In order to avoid misconceptions about the organization, it’s important to have clarity and synergy of communication objectives. Therefore, the following is the summary about the organization to guide all. The message directions of this organization should be as follows:
+
+ABOUT WHO WE ARE:
+We are an indigenous social-economic grassroot oriented NGO committed to the advancement of the growth and prosperity of our people through Self development, political participation and sustainable development for organic grassroot impact.
+
+WHAT WE DO:
+We do re-orientation of our people, we promote self development and expose our members to as many realities and opportunities as possible to influence mindset shift and growth. In addition, we influence change through active participation in governance for a greater Bayelsa. We collaborate with the government, other organizations and other stakeholders to the benefit of our members. 
+
+STRUCTURE OF THE ORGANIZATION 
+
+1. The first management level is the Central management Board that makes policies and  oversight the management team
+2. The second management level is the management team and this  is headed by a Director-General (DG). The DG works with different directors and local government cordinators at Headquaters to ensure the overall success of the organization. 
+3. The third management level is the LGA management which is headed by the LGA cordinators and they are responsible for the leadership of their LGA working with their ward cordinator 
+4. The Fourth management level is the ward management level which is headed by the ward  cordinators and they are responsible for the leadership at the wards under them working with the unit cordinators 
+5. The final management level is the unit management level which is headed by the unit cordinators of the units. They are responsible for the management and leadership of the units under them. 
+
+
+MEMBERSHIP CRITERIA 
+1. You must be an adult 
+2. You must be a valid voter
+3. You must be willing, available and ready to develop yourself and add value to the organization and the society. 
+
+HOW TO BE A MEMBER 
+1. Register as a member through your unit Cordinator. It’s FREE!
+2. Be inducted as a member 
+
+WHAT OUR MEMBERS BENEFIT:
+1. Subsidized health insurance 
+2. Access to job and scholarship information and opportunities 
+3. Access to interest free loans
+4. Access to free trainings and other self development programs 
+5. Enabling foundation and platform for self exposure and opportunities 
+6. Networking opportunities 
+
+OBLIGATIONS OF MEMBERS 
+1. Be a good ambassador  of our organization and the state at all time with INTEGRITY . 
+2. Be active and supportive  in the activities of the organization
+3. Be eligible , ready and willing to participate in all elections in order to influence the change we need to benefit the organization and our members 
+4. 
+
+WHAT YOU MUST KNOW: 
+1. We don’t promise riches and influence . This organization is not a get rich quick place or a place for you to gain fame and political popularity. 
+2. Your membership of this organization means you identify with the ideals of the organization and ready to perform your obligations and responsibilities to the organization. 
+3. You must guard your integrity at all cost because if you loose your integrity, you will no longer be a member of this organization. 
+4. We collaborate with the government, stakeholders and organizations to bring benefits to our members. We are not a political organization but we support only those who will support the ideals of the organization. Therefore, during elections, we all support and  vote only the candidate or party that has a pact with the organization to benefit us. 
+
+OUR CORE VALUES:
+Peace. Unity. Integrity. Courage.  patriotism.
+
+GREATERBAYELSA PLATFORM FUNCTIONALITIES 
+
+The platform is to be a portal for management of greater bayelsa. Therefore, it should be able to do the following:
+1. Everything about membership registration should be on the platform. Authentication of members from each level should also be on the platform 
+2. It should have a CRM to manage members by sending automated messages to all registered members on their birthdays and other set anniversaries 
+3. There should be a segment for news and upcoming events 
+4. The portal should have links to all social media platforms of the organization 
+5. Members should be able to interact on with various divisions/ directorates 
+6. Each member should have a unique code and account on the platform

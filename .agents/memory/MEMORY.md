@@ -1,0 +1,3 @@
+- [Orval zod v4 import fix](orval-zod-v4.md) — codegen emits zod v4 API but imports v3 entrypoint; codegen script sed-rewrites to `zod/v4`. Keep that step.
+- [Date serialization in API routes](api-date-serialization.md) — generated response schemas expect ISO strings; serialize Drizzle timestamp Dates before `.parse()`.
+- [SVG logos via img](svg-img-external-refs.md) — SVGs used in `<img>` can't load external files; embed rasters as base64 data URIs or they render blank.
