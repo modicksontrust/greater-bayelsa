@@ -29,13 +29,11 @@ export function PublicLayout({ children }: PublicLayoutProps) {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 min-w-0 group shrink-0">
-            <div className="bg-primary p-1.5 rounded-sm overflow-hidden flex items-center justify-center h-9 w-9 shrink-0 shadow-sm border border-primary/20">
-              <img
-                src={`${import.meta.env.BASE_URL}logo.svg`}
-                alt="Greater Bayelsa"
-                className="h-full w-full object-contain filter invert opacity-90 group-hover:opacity-100 transition-opacity"
-              />
-            </div>
+            <img
+              src={`${import.meta.env.BASE_URL}logo.svg`}
+              alt="Greater Bayelsa"
+              className="h-9 w-9 object-contain shrink-0"
+            />
             <h1 className="text-base md:text-lg font-bold font-serif tracking-tight text-foreground group-hover:text-primary transition-colors leading-none truncate">
               Greater Bayelsa
             </h1>
@@ -147,13 +145,11 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-2.5"
                   >
-                    <div className="bg-primary p-1 rounded-sm h-8 w-8 flex items-center justify-center shrink-0">
-                      <img
-                        src={`${import.meta.env.BASE_URL}logo.svg`}
-                        alt="Greater Bayelsa"
-                        className="h-full w-full object-contain filter invert opacity-90"
-                      />
-                    </div>
+                    <img
+                      src={`${import.meta.env.BASE_URL}logo.svg`}
+                      alt="Greater Bayelsa"
+                      className="h-8 w-8 object-contain shrink-0"
+                    />
                     <span className="font-bold font-serif text-sm">Greater Bayelsa</span>
                   </Link>
                   <Button
@@ -249,13 +245,11 @@ export function PublicLayout({ children }: PublicLayoutProps) {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-12">
             <div className="md:col-span-5 space-y-6">
               <div className="flex items-center gap-4">
-                <div className="bg-white p-2 rounded-sm overflow-hidden flex items-center justify-center h-12 w-12 shrink-0">
-                  <img
-                    src={`${import.meta.env.BASE_URL}logo.svg`}
-                    alt="Greater Bayelsa"
-                    className="h-full w-full object-contain filter invert"
-                  />
-                </div>
+                <img
+                  src={`${import.meta.env.BASE_URL}logo.svg`}
+                  alt="Greater Bayelsa"
+                  className="h-12 w-12 object-contain shrink-0"
+                />
                 <div>
                   <h2 className="text-2xl font-bold font-serif text-white leading-none">
                     Greater Bayelsa

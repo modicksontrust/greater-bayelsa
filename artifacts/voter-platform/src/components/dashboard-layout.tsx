@@ -74,13 +74,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex h-full flex-col">
       <div className="p-6">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="bg-sidebar-primary p-1.5 rounded-sm overflow-hidden flex items-center justify-center h-10 w-10 shrink-0 shadow-sm">
-            <img
-              src={`${import.meta.env.BASE_URL}logo.svg`}
-              alt="Greater Bayelsa"
-              className="h-full w-full object-contain filter invert opacity-90"
-            />
-          </div>
+          <img
+            src={`${import.meta.env.BASE_URL}logo.svg`}
+            alt="Greater Bayelsa"
+            className="h-10 w-10 object-contain shrink-0"
+          />
           <div>
             <h2 className="text-lg font-bold font-serif tracking-tight text-sidebar-foreground group-hover:text-sidebar-primary transition-colors">
               Greater Bayelsa
@@ -161,13 +159,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex flex-1 flex-col overflow-hidden relative">
         <header className="flex h-16 items-center justify-between border-b border-border/50 bg-card/80 backdrop-blur-md px-4 md:hidden sticky top-0 z-20 shadow-sm">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="bg-primary p-1 rounded-sm h-8 w-8 flex items-center justify-center shadow-sm">
-              <img
-                src={`${import.meta.env.BASE_URL}logo.svg`}
-                alt="Logo"
-                className="h-full w-full object-contain filter invert opacity-90"
-              />
-            </div>
+            <img
+              src={`${import.meta.env.BASE_URL}logo.svg`}
+              alt="Greater Bayelsa"
+              className="h-8 w-8 object-contain shrink-0"
+            />
             <div>
               <h1 className="text-sm font-bold font-serif leading-none">Greater Bayelsa</h1>
               <span className="text-[9px] uppercase tracking-widest text-primary font-bold">Portal</span>
