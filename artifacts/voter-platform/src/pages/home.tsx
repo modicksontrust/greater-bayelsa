@@ -1,8 +1,32 @@
 import { Link } from "wouter";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, Users, Shield, BookOpen } from "lucide-react";
+import {
+  ArrowRight, CheckCircle2, Users, Shield, BookOpen,
+  LayoutDashboard, UserCircle, CreditCard, GraduationCap,
+  CalendarDays, Bell, MessageSquare, UserPlus, Newspaper,
+  ClipboardList, Database, Send, FileText, CheckSquare,
+} from "lucide-react";
 import { useListPosts } from "@workspace/api-client-react";
 import { PublicLayout } from "@/components/public-layout";
+
+const PORTAL_LINKS = [
+  { name: "Dashboard",       path: "/dashboard",        icon: LayoutDashboard, color: "text-primary",    bg: "bg-primary/8",   desc: "Your home base"          },
+  { name: "My Profile",      path: "/profile",          icon: UserCircle,      color: "text-blue-600",   bg: "bg-blue-50",     desc: "Personal details"        },
+  { name: "Dues & Status",   path: "/dues",             icon: CreditCard,      color: "text-emerald-600",bg: "bg-emerald-50",  desc: "Payments & standing"     },
+  { name: "Training",        path: "/training",         icon: GraduationCap,   color: "text-violet-600", bg: "bg-violet-50",   desc: "Civic curriculum"        },
+  { name: "Meetings",        path: "/meetings",         icon: Users,           color: "text-indigo-600", bg: "bg-indigo-50",   desc: "Sessions & minutes"      },
+  { name: "Calendar",        path: "/calendar",         icon: CalendarDays,    color: "text-amber-600",  bg: "bg-amber-50",    desc: "Events & schedule"       },
+  { name: "Updates",         path: "/updates",          icon: Bell,            color: "text-rose-600",   bg: "bg-rose-50",     desc: "Community notices"       },
+  { name: "Feedback",        path: "/feedback",         icon: MessageSquare,   color: "text-sky-600",    bg: "bg-sky-50",      desc: "Submit reports"          },
+  { name: "Notifications",   path: "/notifications",    icon: ClipboardList,   color: "text-slate-600",  bg: "bg-slate-50",    desc: "Alerts & messages"       },
+  { name: "Member Directory",path: "/members",          icon: Users,           color: "text-teal-600",   bg: "bg-teal-50",     desc: "Leaders view"            },
+  { name: "Enroll Member",   path: "/enroll",           icon: UserPlus,        color: "text-cyan-600",   bg: "bg-cyan-50",     desc: "Coordinators only"       },
+  { name: "News & Impact",   path: "/news",             icon: Newspaper,       color: "text-lime-700",   bg: "bg-lime-50",     desc: "Public updates"          },
+  { name: "HQ Requests",     path: "/admin/requests",   icon: CheckSquare,     color: "text-orange-600", bg: "bg-orange-50",   desc: "HQ admin"                },
+  { name: "Voter Roll",      path: "/admin/voters",     icon: Database,        color: "text-cyan-700",   bg: "bg-cyan-50",     desc: "HQ admin"                },
+  { name: "Manage Content",  path: "/admin/content",    icon: FileText,        color: "text-green-700",  bg: "bg-green-50",    desc: "HQ admin"                },
+  { name: "Bulk Messaging",  path: "/admin/messaging",  icon: Send,            color: "text-pink-600",   bg: "bg-pink-50",     desc: "HQ admin"                },
+];
 
 export function Home() {
   const { data: posts } = useListPosts({ category: "news" });
@@ -73,6 +97,32 @@ export function Home() {
                 <h3 className="text-xl font-bold font-serif mb-3 relative z-10">{feature.title}</h3>
                 <p className="text-muted-foreground leading-relaxed relative z-10">{feature.desc}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Portal Quick Access */}
+      <section className="py-20 bg-muted/40 border-t">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold font-serif mb-3">Member Portal</h2>
+            <p className="text-muted-foreground text-lg">Jump directly to any section of the platform. Sign in to access member-only areas.</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {PORTAL_LINKS.map((item) => (
+              <Link key={item.path} href={item.path}>
+                <div className="group bg-card border rounded-2xl p-4 flex items-center gap-3 hover:border-primary/40 hover:shadow-md transition-all cursor-pointer h-full">
+                  <div className={`${item.bg} ${item.color} rounded-xl p-2.5 shrink-0`}>
+                    <item.icon className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-foreground leading-tight">{item.name}</p>
+                    <p className="text-[11px] text-muted-foreground font-medium mt-0.5 truncate">{item.desc}</p>
+                  </div>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground ml-auto shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </Link>
             ))}
           </div>
         </div>
