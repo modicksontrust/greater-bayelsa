@@ -203,6 +203,8 @@ export interface MeUpdate {
   /** @nullable */
   photoUrl?: string | null;
   /** @nullable */
+  stateOfOrigin?: string | null;
+  /** @nullable */
   occupation?: string | null;
   /** @nullable */
   address?: string | null;
@@ -248,6 +250,8 @@ export interface MemberEnrollment {
   dateOfBirth: string;
   /** @nullable */
   gender?: string | null;
+  /** @nullable */
+  stateOfOrigin?: string | null;
   /** @nullable */
   occupation?: string | null;
   /** @nullable */
@@ -295,6 +299,8 @@ export interface MemberUpdate {
   email?: string | null;
   /** @nullable */
   photoUrl?: string | null;
+  /** @nullable */
+  stateOfOrigin?: string | null;
   /** @nullable */
   occupation?: string | null;
   /** @nullable */

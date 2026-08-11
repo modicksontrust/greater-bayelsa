@@ -26,6 +26,8 @@ export interface MemberEnrollment {
   /** @nullable */
   gender?: string | null;
   /** @nullable */
+  stateOfOrigin?: string | null;
+  /** @nullable */
   occupation?: string | null;
   /** @nullable */
   address?: string | null;

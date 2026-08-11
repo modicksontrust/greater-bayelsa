@@ -37,6 +37,7 @@ export const usersTable = pgTable("users", {
   voterId: integer("voter_id").references(() => votersTable.id),
 
   // Profile
+  stateOfOrigin: text("state_of_origin"),
   occupation: text("occupation"),
   address: text("address"),
   maritalStatus: text("marital_status"),

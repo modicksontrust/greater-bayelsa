@@ -19,6 +19,8 @@ export interface MeUpdate {
   /** @nullable */
   photoUrl?: string | null;
   /** @nullable */
+  stateOfOrigin?: string | null;
+  /** @nullable */
   occupation?: string | null;
   /** @nullable */
   address?: string | null;

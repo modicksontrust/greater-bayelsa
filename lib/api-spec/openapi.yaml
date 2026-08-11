@@ -1227,6 +1227,7 @@ components:
         whatsapp: { type: [string, "null"] }
         email: { type: [string, "null"] }
         photoUrl: { type: [string, "null"] }
+        stateOfOrigin: { type: [string, "null"] }
         occupation: { type: [string, "null"] }
         address: { type: [string, "null"] }
         maritalStatus: { type: [string, "null"] }
@@ -1263,6 +1264,7 @@ components:
         photoUrl: { type: string, minLength: 1 }
         dateOfBirth: { type: string }
         gender: { type: [string, "null"] }
+        stateOfOrigin: { type: [string, "null"] }
         occupation: { type: [string, "null"] }
         address: { type: [string, "null"] }
         maritalStatus: { type: string }
@@ -1294,6 +1296,7 @@ components:
         whatsapp: { type: [string, "null"] }
         email: { type: [string, "null"] }
         photoUrl: { type: [string, "null"] }
+        stateOfOrigin: { type: [string, "null"] }
         occupation: { type: [string, "null"] }
         address: { type: [string, "null"] }
         maritalStatus: { type: [string, "null"] }

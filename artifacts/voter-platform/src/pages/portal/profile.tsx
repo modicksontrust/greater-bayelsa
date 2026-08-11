@@ -38,6 +38,7 @@ export function Profile() {
     nextOfKinPhone: "",
     cvUrl: "",
     photoUrl: "",
+    stateOfOrigin: "",
     bankName: "",
     bankAccountName: "",
     bankAccountNumber: "",
@@ -65,6 +66,7 @@ export function Profile() {
         nextOfKinPhone: member.nextOfKinPhone || "",
         cvUrl: member.cvUrl || "",
         photoUrl: member.photoUrl || "",
+        stateOfOrigin: (member as any).stateOfOrigin || "",
         bankName: (member as any).bankName || "",
         bankAccountName: (member as any).bankAccountName || "",
         bankAccountNumber: (member as any).bankAccountNumber || "",
@@ -198,6 +200,10 @@ export function Profile() {
             <div className="space-y-2">
               <Label htmlFor="occupation">Occupation</Label>
               <Input id="occupation" name="occupation" value={formData.occupation} onChange={handleChange} className="h-12 bg-muted/50" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="stateOfOrigin">State of Origin</Label>
+              <Input id="stateOfOrigin" name="stateOfOrigin" value={formData.stateOfOrigin} onChange={handleChange} className="h-12 bg-muted/50" placeholder="e.g. Bayelsa, Rivers, Lagos..." />
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="address">Residential Address</Label>

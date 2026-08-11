@@ -32,6 +32,7 @@ export function Enroll() {
     phone: "",
     phone2: "",
     phone3: "",
+    stateOfOrigin: "",
     vin: "",
     dateOfBirth: "",
     gender: "",
@@ -263,8 +264,34 @@ export function Enroll() {
             <h3 className="text-base font-bold font-serif mb-4 border-t pt-6">Personal Details</h3>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
+                <Label>Gender</Label>
+                <Select value={formData.gender} onValueChange={v => setFormData(p => ({ ...p, gender: v }))}>
+                  <SelectTrigger className="h-12 bg-muted/50 font-semibold"><SelectValue placeholder="Select Gender" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Marital Status <span className="text-destructive">*</span></Label>
+                <Select value={formData.maritalStatus} onValueChange={v => setFormData(p => ({ ...p, maritalStatus: v }))}>
+                  <SelectTrigger className="h-12 bg-muted/50 font-semibold"><SelectValue placeholder="Select Status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single">Single</SelectItem>
+                    <SelectItem value="married">Married</SelectItem>
+                    <SelectItem value="divorced">Divorced</SelectItem>
+                    <SelectItem value="widowed">Widowed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label>Occupation</Label>
                 <Input name="occupation" value={formData.occupation} onChange={handleChange} className="h-12 bg-muted/50" placeholder="e.g. Farmer, Teacher, Trader..." />
+              </div>
+              <div className="space-y-2">
+                <Label>State of Origin</Label>
+                <Input name="stateOfOrigin" value={formData.stateOfOrigin} onChange={handleChange} className="h-12 bg-muted/50" placeholder="e.g. Bayelsa, Rivers, Lagos..." />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label>Residential Address</Label>

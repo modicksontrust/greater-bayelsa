@@ -346,6 +346,7 @@ router.post("/members", requireCoordinator, async (req, res): Promise<void> => {
         photoUrl: body.photoUrl,
         vin: body.vin.trim(),
         voterId: voter.id,
+        stateOfOrigin: body.stateOfOrigin ?? null,
         occupation: body.occupation ?? null,
         address: body.address ?? null,
         maritalStatus: body.maritalStatus,
