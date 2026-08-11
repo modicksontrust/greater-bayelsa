@@ -290,8 +290,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 Headquarters
               </h3>
               <ul className="space-y-4 text-sm text-white/70">
-                <li className="font-medium text-white">Sagbama Constituency One</li>
-                <li>Bayelsa State, Nigeria</li>
+                <li className="font-medium text-white">No. 71 Greenvilla Road</li>
+                <li>Yenagoa, Bayelsa State, Nigeria</li>
                 <li className="pt-2">
                   <a
                     href="mailto:contact@greaterbayelsa.org"
