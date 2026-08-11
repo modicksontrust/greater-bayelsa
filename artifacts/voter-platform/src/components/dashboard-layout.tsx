@@ -77,7 +77,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <img
             src={`${import.meta.env.BASE_URL}logo.svg`}
             alt="Greater Bayelsa"
-            className="h-10 w-10 object-contain shrink-0"
+            className="h-10 w-10 object-contain shrink-0 rounded-sm ring-2 ring-white"
           />
           <div>
             <h2 className="text-lg font-bold font-serif tracking-tight text-sidebar-foreground group-hover:text-sidebar-primary transition-colors">
@@ -162,7 +162,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <img
               src={`${import.meta.env.BASE_URL}logo.svg`}
               alt="Greater Bayelsa"
-              className="h-8 w-8 object-contain shrink-0"
+              className="h-8 w-8 object-contain shrink-0 rounded-sm ring-2 ring-white"
             />
             <div>
               <h1 className="text-sm font-bold font-serif leading-none">Greater Bayelsa</h1>

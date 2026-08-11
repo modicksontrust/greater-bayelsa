@@ -32,7 +32,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             <img
               src={`${import.meta.env.BASE_URL}logo.svg`}
               alt="Greater Bayelsa"
-              className="h-9 w-9 object-contain shrink-0"
+              className="h-9 w-9 object-contain shrink-0 rounded-sm ring-2 ring-white"
             />
             <h1 className="text-base md:text-lg font-bold font-serif tracking-tight text-foreground group-hover:text-primary transition-colors leading-none truncate">
               Greater Bayelsa
@@ -148,7 +148,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                     <img
                       src={`${import.meta.env.BASE_URL}logo.svg`}
                       alt="Greater Bayelsa"
-                      className="h-8 w-8 object-contain shrink-0"
+                      className="h-8 w-8 object-contain shrink-0 rounded-sm ring-2 ring-white"
                     />
                     <span className="font-bold font-serif text-sm">Greater Bayelsa</span>
                   </Link>
@@ -248,7 +248,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 <img
                   src={`${import.meta.env.BASE_URL}logo.svg`}
                   alt="Greater Bayelsa"
-                  className="h-12 w-12 object-contain shrink-0"
+                  className="h-12 w-12 object-contain shrink-0 rounded-sm ring-2 ring-white"
                 />
                 <div>
                   <h2 className="text-2xl font-bold font-serif text-white leading-none">
