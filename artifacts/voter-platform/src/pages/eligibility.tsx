@@ -46,7 +46,7 @@ export function Eligibility() {
                 <div>
                   <h3 className="text-xl font-bold mb-2">2. Registered Voter Status</h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    You must possess a valid Voter Identification Number (VIN) registered within the approved units. <strong>No exceptions.</strong> Our platform crosses checks your VIN against the official roll during enrollment.
+                    You must possess a valid Voter Identification Number (VIN) registered within the approved units. <strong>No exceptions.</strong> Our platform cross-checks your VIN against the official roll during enrollment.
                   </p>
                 </div>
               </div>
