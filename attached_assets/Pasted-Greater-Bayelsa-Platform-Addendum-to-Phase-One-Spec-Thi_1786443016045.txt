@@ -1,0 +1,28 @@
+Greater Bayelsa Platform — Addendum to Phase-One Spec
+
+This covers updates and corrections decided after the original phase-one spec was sent. Read it alongside that document — where something here conflicts with the original spec, this addendum supersedes it.
+
+1. Monthly Village Meeting Agenda — Corrected (Training Removed)
+
+The monthly meeting agenda is now six fixed segments, identical every month:
+
+	1.	Opening — welcome and attendance
+	2.	Wellbeing/welfare check — support needs, bereavement, urgent concerns
+	3.	Updates and reporting — local/community/security matters
+	4.	Open floor — member concerns and requests (feeds the headquarters request field)
+	5.	Dues confirmation and administrative matters
+	6.	Closing remarks and next meeting reminder
+
+Core objectives this structure still serves: shifting mindset toward self-reliance and civic-mindedness, strengthening cohesion and accountability, surfacing local intelligence to HQ, and sustaining the cooperative membership relationship via dues.
+
+2. Training — Now a Separate Annual Track
+
+Training is not part of the monthly meeting — running it in six villages every month isn’t workable. Instead it’s a standalone program: roughly 6–10 sessions a year, scheduled independently, open only to interested/eligible members, who gather at a designated location for the training period. Platform needs its own training module — scheduling, interest/eligibility registration, attendance, completion tracking — feeding into the member’s skills profile.
+
+3. Village Leadership — Now a 3-Person Executive
+
+Each village has: Village Head (leadership/chair), Secretary / welfare (records, owns meeting-update reporting and handles welfare of members ), Treasurer (village finances, dues, bulk POS payment recording). Platform needs a village-level role field (head/secretary/treasurer) so dashboard permissions — especially financial actions — are scoped per role, not concentrated in one login.
+
+4. Member-Only Development Offerings (Reaffirmed)
+
+Training, insurance, loans, and job access stay restricted to verified, dues-current members — not public. General-awareness content/open events can stay public. Always communicate these as “Member Development” / “Growth Opportunities,” never “benefits” or “welfare.”

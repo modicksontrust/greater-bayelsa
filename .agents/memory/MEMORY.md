@@ -1,3 +1,5 @@
 - [Orval zod v4 import fix](orval-zod-v4.md) — codegen emits zod v4 API but imports v3 entrypoint; codegen script sed-rewrites to `zod/v4`. Keep that step.
 - [Date serialization in API routes](api-date-serialization.md) — generated response schemas expect ISO strings; serialize Drizzle timestamp Dates before `.parse()`.
 - [SVG logos via img](svg-img-external-refs.md) — SVGs used in `<img>` can't load external files; embed rasters as base64 data URIs or they render blank.
+- [Orval operationId collisions](orval-operationid-collisions.md) — component schema names must not collide with operationId-derived zod const names or codegen breaks.
+- [gpt-5.6-terra + tools](openai-terra-function-tools.md) — chat completions with function tools require `reasoning_effort: "none"` on this model.

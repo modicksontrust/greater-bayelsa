@@ -2,33 +2,33 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: Greater Bayelsa voter management API
+  version: 0.2.0
+  description: Greater Bayelsa leadership development platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: geography
+  - name: screening
   - name: voters
-    description: Voter records
-  - name: stats
-    description: Dashboard statistics
   - name: members
-    description: Membership registration and profiles
-  - name: posts
-    description: News, jobs, scholarships and announcements
+  - name: dues
+  - name: meetings
+  - name: attendance
+  - name: hq-requests
   - name: events
-    description: Organization events calendar
+  - name: posts
+  - name: updates
   - name: notifications
-    description: Member notifications
+  - name: feedback
+  - name: Storage
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -36,196 +36,120 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ---------- Public geography / Register Now ----------
+  /villages:
+    get:
+      operationId: listVillages
+      tags: [geography]
+      summary: List pilot villages with coordinator info (public)
+      responses:
+        "200":
+          description: Villages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VillagePublic"
+  /villages/{id}/units:
+    get:
+      operationId: listVillageUnits
+      tags: [geography]
+      summary: List units in a village
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Units
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Unit"
+
+  # ---------- AI screening (public) ----------
+  /screening/chat:
+    post:
+      operationId: screeningChat
+      tags: [screening]
+      summary: AI eligibility screening chat turn (public)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScreeningTurnInput"
+      responses:
+        "200":
+          description: Assistant reply
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScreeningReply"
+
+  # ---------- Voter roll (founder/assistant) ----------
   /voters:
     get:
       operationId: listVoters
       tags: [voters]
-      summary: List voters with optional filters
+      summary: List voter roll with optional filters (HQ)
       parameters:
         - name: search
           in: query
           required: false
           schema: { type: string }
-          description: Search by name, VIN, or phone
-        - name: lga
+        - name: villageId
           in: query
           required: false
-          schema: { type: string }
-        - name: ward
-          in: query
-          required: false
-          schema: { type: string }
-        - name: supportLevel
-          in: query
-          required: false
-          schema: { type: string }
-        - name: contactStatus
-          in: query
-          required: false
-          schema: { type: string }
+          schema: { type: integer }
       responses:
         "200":
-          description: List of voters
+          description: Voters
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/Voter"
+  /voters/import:
     post:
-      operationId: createVoter
+      operationId: importVoters
       tags: [voters]
-      summary: Register a new voter
+      summary: Bulk import voter roll rows (HQ)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VoterInput"
-      responses:
-        "201":
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Voter"
-  /voters/{id}:
-    get:
-      operationId: getVoter
-      tags: [voters]
-      summary: Get a voter by id
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: integer }
+              $ref: "#/components/schemas/VoterImportBody"
       responses:
         "200":
-          description: Voter
+          description: Import result
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Voter"
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-    patch:
-      operationId: updateVoter
-      tags: [voters]
-      summary: Update a voter
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: integer }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/VoterUpdate"
-      responses:
-        "200":
-          description: Updated voter
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Voter"
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-    delete:
-      operationId: deleteVoter
-      tags: [voters]
-      summary: Delete a voter
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: integer }
-      responses:
-        "204":
-          description: Deleted
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-  /stats/summary:
-    get:
-      operationId: getStatsSummary
-      tags: [stats]
-      summary: Overall dashboard summary
-      responses:
-        "200":
-          description: Summary counts
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StatsSummary"
-  /stats/by-lga:
-    get:
-      operationId: getStatsByLga
-      tags: [stats]
-      summary: Voter counts grouped by LGA
-      responses:
-        "200":
-          description: Counts per LGA
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/LgaCount"
-  /stats/by-support-level:
-    get:
-      operationId: getStatsBySupportLevel
-      tags: [stats]
-      summary: Voter counts grouped by support level
-      responses:
-        "200":
-          description: Counts per support level
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SupportLevelCount"
-  /stats/recent:
-    get:
-      operationId: getRecentVoters
-      tags: [stats]
-      summary: Most recently registered voters
-      responses:
-        "200":
-          description: Recent voters
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Voter"
+                $ref: "#/components/schemas/VoterImportResult"
+
+  # ---------- Me ----------
   /me:
     get:
       operationId: getMe
       tags: [members]
-      summary: Get the signed-in user's member profile
+      summary: Get the signed-in user's profile
       responses:
         "200":
-          description: Member profile
+          description: Profile
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Member"
         "404":
-          description: Not registered as a member yet
+          description: No member profile
           content:
             application/json:
               schema:
@@ -233,13 +157,13 @@ paths:
     patch:
       operationId: updateMe
       tags: [members]
-      summary: Update own member profile
+      summary: Update own limited profile fields
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MemberUpdate"
+              $ref: "#/components/schemas/MeUpdate"
       responses:
         "200":
           description: Updated profile
@@ -247,63 +171,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Member"
-  /me/coordinator:
-    get:
-      operationId: getMyCoordinator
-      tags: [members]
-      summary: Get the coordinator for the member's unit/ward/LGA
-      responses:
-        "200":
-          description: Coordinator (closest level found)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Member"
-        "404":
-          description: No coordinator assigned yet
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-  /members/match:
-    get:
-      operationId: matchVoter
-      tags: [members]
-      summary: Match a voter record by VIN or phone during registration
-      parameters:
-        - name: q
-          in: query
-          required: true
-          schema: { type: string, minLength: 4 }
-          description: VIN or phone number
-      responses:
-        "200":
-          description: Matching voter records (masked)
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/VoterMatch"
+
+  # ---------- Members (role-scoped) ----------
   /members:
     get:
       operationId: listMembers
       tags: [members]
-      summary: List members (admin)
+      summary: List members within the caller's visibility scope
       parameters:
         - name: search
           in: query
           required: false
           schema: { type: string }
-          description: Search by name, membership code, VIN, or phone
-        - name: lga
+        - name: villageId
           in: query
           required: false
-          schema: { type: string }
-        - name: ward
+          schema: { type: integer }
+        - name: unitId
           in: query
           required: false
-          schema: { type: string }
+          schema: { type: integer }
         - name: role
           in: query
           required: false
@@ -314,7 +201,7 @@ paths:
           schema: { type: string }
       responses:
         "200":
-          description: List of members
+          description: Members
           content:
             application/json:
               schema:
@@ -322,33 +209,52 @@ paths:
                 items:
                   $ref: "#/components/schemas/Member"
     post:
-      operationId: registerMember
+      operationId: enrollMember
       tags: [members]
-      summary: Register the signed-in user as a member
+      summary: Enroll a new member (coordinators only; creates login)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MemberInput"
+              $ref: "#/components/schemas/MemberEnrollment"
       responses:
         "201":
-          description: Created member
+          description: Enrolled member
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Member"
         "409":
-          description: Already registered
+          description: Duplicate VIN or account
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /members/match:
+    get:
+      operationId: matchVoter
+      tags: [members]
+      summary: Match a voter-roll record by VIN or phone (coordinators)
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 3 }
+      responses:
+        "200":
+          description: Matching voters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Voter"
   /members/{id}:
     get:
       operationId: getMember
       tags: [members]
-      summary: Get a member by id (admin)
+      summary: Get a member within scope
       parameters:
         - name: id
           in: path
@@ -368,9 +274,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
     patch:
-      operationId: adminUpdateMember
+      operationId: updateMember
       tags: [members]
-      summary: Update a member's role, status or category (admin)
+      summary: Update a member (leaders update own scope; HQ manages roles)
       parameters:
         - name: id
           in: path
@@ -381,7 +287,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AdminMemberUpdate"
+              $ref: "#/components/schemas/MemberUpdate"
       responses:
         "200":
           description: Updated member
@@ -395,11 +301,334 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /stats/overview:
+    get:
+      operationId: getOverviewStats
+      tags: [members]
+      summary: Role-scoped overview stats (per village/unit rollups)
+      responses:
+        "200":
+          description: Overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OverviewStats"
+
+  # ---------- Dues ----------
+  /dues/me:
+    get:
+      operationId: getMyDues
+      tags: [dues]
+      summary: Own dues history and current status
+      responses:
+        "200":
+          description: Dues status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyDues"
+  /dues/status:
+    get:
+      operationId: getDuesStatus
+      tags: [dues]
+      summary: Per-member dues status for a period within scope
+      parameters:
+        - name: period
+          in: query
+          required: true
+          schema: { type: string }
+        - name: villageId
+          in: query
+          required: false
+          schema: { type: integer }
+        - name: unitId
+          in: query
+          required: false
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Member dues statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemberDuesStatus"
+  /dues/rollup:
+    get:
+      operationId: getDuesRollup
+      tags: [dues]
+      summary: Aggregated paid/overdue rollup by village and unit within scope
+      parameters:
+        - name: period
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Rollup rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DuesRollupRow"
+  /dues/bulk:
+    post:
+      operationId: recordBulkDues
+      tags: [dues]
+      summary: Record a bulk cash payment for unit members (unit leader)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkDuesBody"
+      responses:
+        "201":
+          description: Payments recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkDuesResult"
+  /dues/reminders:
+    post:
+      operationId: sendDuesReminders
+      tags: [dues]
+      summary: Send in-platform dues reminders to overdue members (HQ)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DuesRemindersBody"
+      responses:
+        "200":
+          description: Reminders sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DuesRemindersResult"
+
+  # ---------- Meetings ----------
+  /meetings:
+    get:
+      operationId: listMeetings
+      tags: [meetings]
+      summary: List meeting records within scope
+      parameters:
+        - name: villageId
+          in: query
+          required: false
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Meetings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Meeting"
+    post:
+      operationId: submitMeeting
+      tags: [meetings]
+      summary: Submit a monthly meeting update (village head)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetingSubmission"
+      responses:
+        "201":
+          description: Meeting recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+  /meetings/{id}:
+    get:
+      operationId: getMeeting
+      tags: [meetings]
+      summary: Get a meeting with media and attendance
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Meeting detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeetingDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------- Attendance ----------
+  /attendance/checkin:
+    post:
+      operationId: attendanceCheckin
+      tags: [attendance]
+      summary: QR self-check-in for a meeting (member scans code)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckinBody"
+      responses:
+        "201":
+          description: Attendance logged
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceRecord"
+        "404":
+          description: Invalid code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Already checked in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /attendance/video:
+    post:
+      operationId: attendanceVideo
+      tags: [attendance]
+      summary: Record video-verified attendance for a member (leader)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoAttendanceBody"
+      responses:
+        "201":
+          description: Attendance logged
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceRecord"
+
+  # ---------- HQ requests ----------
+  /hq-requests:
+    get:
+      operationId: listHqRequests
+      tags: [hq-requests]
+      summary: List requests to headquarters within scope
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HqRequest"
+  /hq-requests/{id}:
+    patch:
+      operationId: updateHqRequest
+      tags: [hq-requests]
+      summary: Respond to / resolve an HQ request (HQ)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HqRequestUpdate"
+      responses:
+        "200":
+          description: Updated request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HqRequest"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------- Calendar ----------
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: Calendar events visible to the caller (org-wide + local)
+      responses:
+        "200":
+          description: Events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Create an event (HQ = org-wide; leaders = local)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "201":
+          description: Created event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+  /events/{id}:
+    delete:
+      operationId: deleteEvent
+      tags: [events]
+      summary: Delete an event (creator or HQ)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------- Public posts ----------
   /posts:
     get:
       operationId: listPosts
       tags: [posts]
-      summary: List published posts
+      summary: List public posts
       parameters:
         - name: category
           in: query
@@ -417,7 +646,7 @@ paths:
     post:
       operationId: createPost
       tags: [posts]
-      summary: Create a post (admin)
+      summary: Create a post (HQ)
       requestBody:
         required: true
         content:
@@ -457,7 +686,7 @@ paths:
     patch:
       operationId: updatePost
       tags: [posts]
-      summary: Update a post (admin)
+      summary: Update a post (HQ)
       parameters:
         - name: id
           in: path
@@ -485,7 +714,7 @@ paths:
     delete:
       operationId: deletePost
       tags: [posts]
-      summary: Delete a post (admin)
+      summary: Delete a post (HQ)
       parameters:
         - name: id
           in: path
@@ -500,61 +729,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-  /events:
+
+  # ---------- Community updates ----------
+  /updates:
     get:
-      operationId: listEvents
-      tags: [events]
-      summary: List events
+      operationId: listUpdates
+      tags: [updates]
+      summary: Community updates feed within scope, urgent first
       responses:
         "200":
-          description: Events
+          description: Updates
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Event"
+                  $ref: "#/components/schemas/CommunityUpdate"
     post:
-      operationId: createEvent
-      tags: [events]
-      summary: Create an event (admin)
+      operationId: createUpdate
+      tags: [updates]
+      summary: Post a community update (leaders and HQ)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/EventInput"
+              $ref: "#/components/schemas/CommunityUpdateInput"
       responses:
         "201":
-          description: Created event
+          description: Created update
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Event"
-  /events/{id}:
-    delete:
-      operationId: deleteEvent
-      tags: [events]
-      summary: Delete an event (admin)
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: integer }
-      responses:
-        "204":
-          description: Deleted
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/CommunityUpdate"
+
+  # ---------- Notifications / messaging ----------
   /notifications:
     get:
       operationId: listNotifications
       tags: [notifications]
-      summary: List the signed-in member's notifications (including broadcasts)
+      summary: Own notifications
       responses:
         "200":
           description: Notifications
@@ -564,28 +778,11 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Notification"
-    post:
-      operationId: sendNotification
-      tags: [notifications]
-      summary: Send a notification to one member or broadcast to all (admin)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/NotificationInput"
-      responses:
-        "201":
-          description: Sent notification
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Notification"
   /notifications/{id}/read:
     post:
       operationId: markNotificationRead
       tags: [notifications]
-      summary: Mark a direct notification as read
+      summary: Mark own notification as read
       parameters:
         - name: id
           in: path
@@ -604,242 +801,760 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-  /stats/members-summary:
-    get:
-      operationId: getMembersSummary
-      tags: [stats]
-      summary: Membership summary counts (admin)
+  /messages:
+    post:
+      operationId: sendMessage
+      tags: [notifications]
+      summary: Send bulk or individual message to members (HQ)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageSendInput"
       responses:
-        "200":
-          description: Membership counts
+        "201":
+          description: Message fan-out result
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MembersSummary"
+                $ref: "#/components/schemas/SendMessageResult"
+
+  # ---------- Feedback ----------
+  /feedback:
+    get:
+      operationId: listFeedback
+      tags: [feedback]
+      summary: List member feedback reports (HQ) or own reports (member)
+      responses:
+        "200":
+          description: Reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeedbackReport"
+    post:
+      operationId: submitFeedback
+      tags: [feedback]
+      summary: Submit a direct report to headquarters (member)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackInput"
+      responses:
+        "201":
+          description: Created report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackReport"
+  /feedback/{id}:
+    patch:
+      operationId: updateFeedback
+      tags: [feedback]
+      summary: Respond to / resolve a feedback report (HQ)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackUpdate"
+      responses:
+        "200":
+          description: Updated report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackReport"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------- Storage ----------
+  /trainings:
+    get:
+      tags: [training]
+      operationId: listTrainings
+      summary: List training sessions visible to the caller (with own registration state)
+      responses:
+        "200":
+          description: Training sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrainingSession"
+    post:
+      tags: [training]
+      operationId: createTraining
+      summary: Schedule a training session (HQ only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainingSessionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingSession"
+  /trainings/{id}/register:
+    post:
+      tags: [training]
+      operationId: registerTraining
+      summary: Register interest/attendance for a training session (member)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingRegistration"
+        "409":
+          description: Already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /trainings/{id}/progress:
+    post:
+      tags: [training]
+      operationId: updateTrainingProgress
+      summary: Mark attendance/completion for registrants (HQ or session-village secretary)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainingProgressBody"
+      responses:
+        "200":
+          description: Updated registrations
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [updated]
+                properties:
+                  updated: { type: integer }
+  /trainings/{id}/registrants:
+    get:
+      tags: [training]
+      operationId: listTrainingRegistrants
+      summary: List registrants for a session (HQ or village executive)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Registrants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrainingRegistration"
+  /storage/uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /storage/public-objects/{filePath}:
+    get:
+      tags: [Storage]
+      operationId: getPublicObject
+      summary: Serve a public asset
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /storage/objects/{objectPath}:
+    get:
+      tags: [Storage]
+      operationId: getStorageObject
+      summary: Serve an uploaded object
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
     ErrorResponse:
       type: object
+      required: [error]
       properties:
-        error:
-          type: string
-      required:
-        - error
+        error: { type: string }
+
+    Unit:
+      type: object
+      required: [id, villageId, name]
+      properties:
+        id: { type: integer }
+        villageId: { type: integer }
+        name: { type: string }
+
+    CoordinatorPublic:
+      type: object
+      required: [firstName, lastName]
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        bio: { type: [string, "null"] }
+        photoUrl: { type: [string, "null"] }
+        credentials: { type: [string, "null"] }
+        vettingStatus: { type: [string, "null"] }
+        whatsapp: { type: [string, "null"] }
+        tenureSince: { type: [string, "null"] }
+
+    VillagePublic:
+      type: object
+      required: [id, name, units]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: [string, "null"] }
+        coordinator:
+          oneOf:
+            - $ref: "#/components/schemas/CoordinatorPublic"
+            - type: "null"
+        memberCount: { type: integer }
+        units:
+          type: array
+          items:
+            $ref: "#/components/schemas/Unit"
+
+    ScreeningTurnInput:
+      type: object
+      required: [messages, villageId]
+      properties:
+        villageId: { type: integer }
+        messages:
+          type: array
+          maxItems: 30
+          items:
+            type: object
+            required: [role, content]
+            properties:
+              role: { type: string, enum: [user, assistant] }
+              content: { type: string, maxLength: 2000 }
+    ScreeningReply:
+      type: object
+      required: [reply, eligible]
+      properties:
+        reply: { type: string }
+        eligible: { type: [boolean, "null"] }
+        whatsappUrl: { type: [string, "null"] }
+
     Voter:
       type: object
-      required:
-        [
-          id,
-          firstName,
-          lastName,
-          gender,
-          lga,
-          ward,
-          pollingUnit,
-          supportLevel,
-          contactStatus,
-          createdAt,
-        ]
+      required: [id, firstName, lastName]
       properties:
         id: { type: integer }
         firstName: { type: string }
         lastName: { type: string }
-        gender: { type: string, enum: [male, female] }
-        phone: { type: ["string", "null"] }
-        vin: { type: ["string", "null"], description: Voter Identification Number }
-        dateOfBirth: { type: ["string", "null"] }
-        occupation: { type: ["string", "null"] }
-        lga: { type: string, description: Local Government Area }
-        ward: { type: string }
-        pollingUnit: { type: string }
-        supportLevel:
-          type: string
-          enum: [strong, leaning, undecided, opposed, unknown]
-        contactStatus:
-          type: string
-          enum: [not_contacted, contacted, follow_up, unreachable]
-        notes: { type: ["string", "null"] }
-        createdAt: { type: string }
-    VoterInput:
+        gender: { type: [string, "null"] }
+        phone: { type: [string, "null"] }
+        vin: { type: [string, "null"] }
+        dateOfBirth: { type: [string, "null"] }
+        occupation: { type: [string, "null"] }
+        villageId: { type: [integer, "null"] }
+        unitId: { type: [integer, "null"] }
+        pollingUnit: { type: [string, "null"] }
+    VoterImportBody:
       type: object
-      required: [firstName, lastName, gender, lga, ward, pollingUnit]
+      required: [rows]
       properties:
-        firstName: { type: string, minLength: 1 }
-        lastName: { type: string, minLength: 1 }
-        gender: { type: string, enum: [male, female] }
-        phone: { type: ["string", "null"] }
-        vin: { type: ["string", "null"] }
-        dateOfBirth: { type: ["string", "null"] }
-        occupation: { type: ["string", "null"] }
-        lga: { type: string, minLength: 1 }
-        ward: { type: string, minLength: 1 }
-        pollingUnit: { type: string, minLength: 1 }
-        supportLevel:
-          type: string
-          enum: [strong, leaning, undecided, opposed, unknown]
-        contactStatus:
-          type: string
-          enum: [not_contacted, contacted, follow_up, unreachable]
-        notes: { type: ["string", "null"] }
-    VoterUpdate:
+        rows:
+          type: array
+          minItems: 1
+          maxItems: 5000
+          items:
+            type: object
+            required: [firstName, lastName]
+            properties:
+              firstName: { type: string }
+              lastName: { type: string }
+              gender: { type: [string, "null"] }
+              phone: { type: [string, "null"] }
+              vin: { type: [string, "null"] }
+              dateOfBirth: { type: [string, "null"] }
+              occupation: { type: [string, "null"] }
+              villageName: { type: [string, "null"] }
+              unitName: { type: [string, "null"] }
+    VoterImportResult:
       type: object
+      required: [imported, skipped]
       properties:
-        firstName: { type: string, minLength: 1 }
-        lastName: { type: string, minLength: 1 }
-        gender: { type: string, enum: [male, female] }
-        phone: { type: ["string", "null"] }
-        vin: { type: ["string", "null"] }
-        dateOfBirth: { type: ["string", "null"] }
-        occupation: { type: ["string", "null"] }
-        lga: { type: string, minLength: 1 }
-        ward: { type: string, minLength: 1 }
-        pollingUnit: { type: string, minLength: 1 }
-        supportLevel:
-          type: string
-          enum: [strong, leaning, undecided, opposed, unknown]
-        contactStatus:
-          type: string
-          enum: [not_contacted, contacted, follow_up, unreachable]
-        notes: { type: ["string", "null"] }
-    StatsSummary:
-      type: object
-      required:
-        [
-          totalVoters,
-          strongSupporters,
-          contacted,
-          notContacted,
-          lgasCovered,
-          wardsCovered,
-        ]
-      properties:
-        totalVoters: { type: integer }
-        strongSupporters: { type: integer }
-        contacted: { type: integer }
-        notContacted: { type: integer }
-        lgasCovered: { type: integer }
-        wardsCovered: { type: integer }
-    LgaCount:
-      type: object
-      required: [lga, count]
-      properties:
-        lga: { type: string }
-        count: { type: integer }
-    SupportLevelCount:
-      type: object
-      required: [supportLevel, count]
-      properties:
-        supportLevel: { type: string }
-        count: { type: integer }
+        imported: { type: integer }
+        skipped: { type: integer }
+
     Member:
       type: object
       required:
         [
           id,
           membershipCode,
+          role,
+          status,
+          membershipCategory,
           firstName,
           lastName,
           phone,
           vin,
-          lga,
-          ward,
-          pollingUnit,
-          membershipCategory,
-          role,
-          status,
           createdAt,
         ]
       properties:
         id: { type: integer }
-        membershipCode: { type: string, description: Unique membership number }
+        membershipCode: { type: string }
+        role: { type: string }
+        status: { type: string }
+        membershipCategory: { type: string }
+        joinDate: { type: [string, "null"] }
         firstName: { type: string }
         lastName: { type: string }
-        email: { type: ["string", "null"] }
+        gender: { type: [string, "null"] }
+        dateOfBirth: { type: [string, "null"] }
         phone: { type: string }
-        vin: { type: string, description: Voter Identification Number }
-        gender: { type: ["string", "null"], enum: [male, female, null] }
-        dateOfBirth: { type: ["string", "null"] }
-        occupation: { type: ["string", "null"] }
-        address: { type: ["string", "null"] }
-        photoUrl: { type: ["string", "null"] }
-        lga: { type: string }
-        ward: { type: string }
-        pollingUnit: { type: string }
-        membershipCategory:
-          type: string
-          enum: [full_time, part_time]
-        role:
-          type: string
-          enum: [member, unit_coordinator, ward_coordinator, lga_coordinator, admin]
-        status:
-          type: string
-          enum: [pending, active, suspended]
+        whatsapp: { type: [string, "null"] }
+        email: { type: [string, "null"] }
+        photoUrl: { type: [string, "null"] }
+        vin: { type: string }
+        voterId: { type: [integer, "null"] }
+        occupation: { type: [string, "null"] }
+        address: { type: [string, "null"] }
+        maritalStatus: { type: [string, "null"] }
+        nextOfKinName: { type: [string, "null"] }
+        nextOfKinPhone: { type: [string, "null"] }
+        cvUrl: { type: [string, "null"] }
+        bio: { type: [string, "null"] }
+        credentials: { type: [string, "null"] }
+        vettingStatus: { type: string }
+        villageId: { type: [integer, "null"] }
+        unitId: { type: [integer, "null"] }
+        villageName: { type: [string, "null"] }
+        unitName: { type: [string, "null"] }
         createdAt: { type: string }
-    MemberInput:
+        trainingCompletions:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrainingCompletion"
+
+    MeUpdate:
+      type: object
+      properties:
+        phone: { type: string }
+        whatsapp: { type: [string, "null"] }
+        email: { type: [string, "null"] }
+        photoUrl: { type: [string, "null"] }
+        occupation: { type: [string, "null"] }
+        address: { type: [string, "null"] }
+        maritalStatus: { type: [string, "null"] }
+        nextOfKinName: { type: [string, "null"] }
+        nextOfKinPhone: { type: [string, "null"] }
+        cvUrl: { type: [string, "null"] }
+
+    MemberEnrollment:
       type: object
       required:
-        [firstName, lastName, phone, vin, lga, ward, pollingUnit, membershipCategory]
+        [
+          firstName,
+          lastName,
+          phone,
+          vin,
+          photoUrl,
+          dateOfBirth,
+          maritalStatus,
+          villageId,
+          unitId,
+          membershipCategory,
+          password,
+        ]
       properties:
         firstName: { type: string, minLength: 1 }
         lastName: { type: string, minLength: 1 }
-        email: { type: ["string", "null"] }
         phone: { type: string, minLength: 7 }
-        vin: { type: string, minLength: 4 }
-        gender: { type: ["string", "null"], enum: [male, female, null] }
-        dateOfBirth: { type: ["string", "null"] }
-        occupation: { type: ["string", "null"] }
-        address: { type: ["string", "null"] }
-        photoUrl: { type: ["string", "null"] }
-        lga: { type: string, minLength: 1 }
-        ward: { type: string, minLength: 1 }
-        pollingUnit: { type: string, minLength: 1 }
-        membershipCategory:
-          type: string
-          enum: [full_time, part_time]
+        vin: { type: string, minLength: 3 }
+        photoUrl: { type: string, minLength: 1 }
+        dateOfBirth: { type: string }
+        gender: { type: [string, "null"] }
+        occupation: { type: [string, "null"] }
+        address: { type: [string, "null"] }
+        maritalStatus: { type: string }
+        villageId: { type: integer }
+        unitId: { type: integer }
+        membershipCategory: { type: string, enum: [full_time, part_time] }
+        password: { type: string, minLength: 8 }
+        email: { type: [string, "null"] }
+        whatsapp: { type: [string, "null"] }
+        nextOfKinName: { type: [string, "null"] }
+        nextOfKinPhone: { type: [string, "null"] }
+        cvUrl: { type: [string, "null"] }
+        bio: { type: [string, "null"] }
+
     MemberUpdate:
       type: object
       properties:
-        firstName: { type: string, minLength: 1 }
-        lastName: { type: string, minLength: 1 }
-        email: { type: ["string", "null"] }
-        phone: { type: string, minLength: 7 }
-        gender: { type: ["string", "null"], enum: [male, female, null] }
-        dateOfBirth: { type: ["string", "null"] }
-        occupation: { type: ["string", "null"] }
-        address: { type: ["string", "null"] }
-        photoUrl: { type: ["string", "null"] }
-    AdminMemberUpdate:
+        role: { type: string }
+        status: { type: string }
+        membershipCategory: { type: string }
+        villageId: { type: integer }
+        unitId: { type: integer }
+        phone: { type: string }
+        whatsapp: { type: [string, "null"] }
+        email: { type: [string, "null"] }
+        photoUrl: { type: [string, "null"] }
+        occupation: { type: [string, "null"] }
+        address: { type: [string, "null"] }
+        maritalStatus: { type: [string, "null"] }
+        nextOfKinName: { type: [string, "null"] }
+        nextOfKinPhone: { type: [string, "null"] }
+        cvUrl: { type: [string, "null"] }
+        bio: { type: [string, "null"] }
+        credentials: { type: [string, "null"] }
+        vettingStatus: { type: string }
+
+    OverviewStats:
       type: object
+      required: [totalMembers, activeMembers, villages]
       properties:
-        role:
-          type: string
-          enum: [member, unit_coordinator, ward_coordinator, lga_coordinator, admin]
-        status:
-          type: string
-          enum: [pending, active, suspended]
-        membershipCategory:
-          type: string
-          enum: [full_time, part_time]
-    VoterMatch:
+        totalMembers: { type: integer }
+        activeMembers: { type: integer }
+        pendingHqRequests: { type: integer }
+        openFeedback: { type: integer }
+        villages:
+          type: array
+          items:
+            type: object
+            required: [villageId, villageName, memberCount]
+            properties:
+              villageId: { type: integer }
+              villageName: { type: string }
+              memberCount: { type: integer }
+              activeCount: { type: integer }
+              units:
+                type: array
+                items:
+                  type: object
+                  required: [unitId, unitName, memberCount]
+                  properties:
+                    unitId: { type: integer }
+                    unitName: { type: string }
+                    memberCount: { type: integer }
+                    leaderName: { type: [string, "null"] }
+
+    MyDues:
       type: object
-      required: [id, firstName, lastName, lga, ward, pollingUnit]
+      required: [current, payments]
+      properties:
+        current:
+          type: object
+          required: [period, paid]
+          properties:
+            period: { type: string }
+            paid: { type: boolean }
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/DuesPayment"
+    DuesPayment:
+      type: object
+      required: [id, userId, period, amountKobo, method, createdAt]
       properties:
         id: { type: integer }
+        userId: { type: integer }
+        period: { type: string }
+        amountKobo: { type: integer }
+        method: { type: string }
+        reference: { type: [string, "null"] }
+        recordedById: { type: [integer, "null"] }
+        createdAt: { type: string }
+    MemberDuesStatus:
+      type: object
+      required: [userId, firstName, lastName, membershipCode, paid]
+      properties:
+        userId: { type: integer }
         firstName: { type: string }
         lastName: { type: string }
-        gender: { type: ["string", "null"] }
-        occupation: { type: ["string", "null"] }
-        dateOfBirth: { type: ["string", "null"] }
-        lga: { type: string }
-        ward: { type: string }
-        pollingUnit: { type: string }
+        membershipCode: { type: string }
+        unitId: { type: [integer, "null"] }
+        villageId: { type: [integer, "null"] }
+        paid: { type: boolean }
+        method: { type: [string, "null"] }
+    DuesRollupRow:
+      type: object
+      required: [villageId, villageName, paidCount, totalCount]
+      properties:
+        villageId: { type: integer }
+        villageName: { type: string }
+        unitId: { type: [integer, "null"] }
+        unitName: { type: [string, "null"] }
+        paidCount: { type: integer }
+        totalCount: { type: integer }
+    BulkDuesBody:
+      type: object
+      required: [userIds, period, reference]
+      properties:
+        userIds:
+          type: array
+          minItems: 1
+          items: { type: integer }
+        period: { type: string }
+        reference: { type: string, minLength: 3 }
+        receiptUrl: { type: [string, "null"] }
+    BulkDuesResult:
+      type: object
+      required: [recorded, alreadyPaid]
+      properties:
+        recorded: { type: integer }
+        alreadyPaid: { type: integer }
+    DuesRemindersBody:
+      type: object
+      required: [period]
+      properties:
+        period: { type: string }
+    DuesRemindersResult:
+      type: object
+      required: [notified]
+      properties:
+        notified: { type: integer }
+
+    Meeting:
+      type: object
+      required:
+        [id, villageId, heldOn, attendanceCount, discussionPoints, createdAt]
+      properties:
+        id: { type: integer }
+        villageId: { type: integer }
+        villageName: { type: [string, "null"] }
+        heldOn: { type: string }
+        attendanceCount: { type: integer }
+        unitBreakdown:
+          type: [array, "null"]
+          items:
+            type: object
+            required: [unitId, count]
+            properties:
+              unitId: { type: integer }
+              count: { type: integer }
+        discussionPoints: { type: string }
+        submittedById: { type: integer }
+        checkinCode: { type: [string, "null"] }
+        verifiedAttendance: { type: [integer, "null"] }
+        createdAt: { type: string }
+    MeetingAgendaSegments:
+      description: "Fixed six-segment monthly meeting agenda. All six keys are required; values must be non-empty strings."
+      type: object
+      required: [opening, wellbeing, updates, openFloor, dues, closing]
+      properties:
+        opening: { type: string, minLength: 1 }
+        wellbeing: { type: string, minLength: 1 }
+        updates: { type: string, minLength: 1 }
+        openFloor: { type: string, minLength: 1 }
+        dues: { type: string, minLength: 1 }
+        closing: { type: string, minLength: 1 }
+    MeetingSubmission:
+      type: object
+      required: [heldOn, attendanceCount, agenda, photos, video]
+      properties:
+        heldOn: { type: string }
+        attendanceCount: { type: integer, minimum: 0 }
+        unitBreakdown:
+          type: [array, "null"]
+          items:
+            type: object
+            required: [unitId, count]
+            properties:
+              unitId: { type: integer }
+              count: { type: integer }
+        agenda:
+          $ref: "#/components/schemas/MeetingAgendaSegments"
+        hqRequest: { type: [string, "null"] }
+        photos:
+          type: array
+          minItems: 5
+          items: { type: string }
+        targetVillageId:
+          type: [integer, "null"]
+          description: "HQ only: specify the village this meeting belongs to"
+        video:
+          type: object
+          required: [objectPath, durationSeconds]
+          properties:
+            objectPath: { type: string }
+            durationSeconds: { type: integer, minimum: 120 }
+    MeetingMedia:
+      type: object
+      required: [id, kind, objectPath]
+      properties:
+        id: { type: integer }
+        kind: { type: string }
+        objectPath: { type: string }
+        durationSeconds: { type: [integer, "null"] }
+    MeetingDetail:
+      allOf:
+        - $ref: "#/components/schemas/Meeting"
+        - type: object
+          required: [media, attendance]
+          properties:
+            media:
+              type: array
+              items:
+                $ref: "#/components/schemas/MeetingMedia"
+            attendance:
+              type: array
+              items:
+                $ref: "#/components/schemas/AttendanceRecord"
+
+    AttendanceRecord:
+      type: object
+      required: [id, meetingId, userId, method, createdAt]
+      properties:
+        id: { type: integer }
+        meetingId: { type: integer }
+        userId: { type: integer }
+        memberName: { type: [string, "null"] }
+        method: { type: string }
+        videoObjectPath: { type: [string, "null"] }
+        createdAt: { type: string }
+    CheckinBody:
+      type: object
+      required: [code]
+      properties:
+        code: { type: string, minLength: 4 }
+    VideoAttendanceBody:
+      type: object
+      required: [meetingId, userId, videoObjectPath]
+      properties:
+        meetingId: { type: integer }
+        userId: { type: integer }
+        videoObjectPath: { type: string }
+
+    HqRequest:
+      type: object
+      required: [id, villageId, body, status, createdAt]
+      properties:
+        id: { type: integer }
+        meetingId: { type: [integer, "null"] }
+        villageId: { type: integer }
+        villageName: { type: [string, "null"] }
+        submittedById: { type: integer }
+        submitterName: { type: [string, "null"] }
+        body: { type: string }
+        status: { type: string }
+        response: { type: [string, "null"] }
+        createdAt: { type: string }
+    HqRequestUpdate:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [open, responded, resolved] }
+        response: { type: [string, "null"] }
+
+    Event:
+      type: object
+      required: [id, title, startsAt, scope, createdAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: [string, "null"] }
+        location: { type: [string, "null"] }
+        startsAt: { type: string }
+        scope: { type: string }
+        villageId: { type: [integer, "null"] }
+        unitId: { type: [integer, "null"] }
+        createdById: { type: [integer, "null"] }
+        createdAt: { type: string }
+    EventInput:
+      type: object
+      required: [title, startsAt, scope]
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: [string, "null"] }
+        location: { type: [string, "null"] }
+        startsAt: { type: string }
+        scope: { type: string, enum: [org, village, unit] }
+        villageId: { type: [integer, "null"] }
+        unitId: { type: [integer, "null"] }
+
     Post:
       type: object
       required: [id, title, body, category, createdAt]
@@ -847,9 +1562,8 @@ components:
         id: { type: integer }
         title: { type: string }
         body: { type: string }
-        category:
-          type: string
-          enum: [news, job, scholarship, announcement]
+        category: { type: string }
+        imageUrl: { type: [string, "null"] }
         createdAt: { type: string }
     PostInput:
       type: object
@@ -857,59 +1571,168 @@ components:
       properties:
         title: { type: string, minLength: 1 }
         body: { type: string, minLength: 1 }
-        category:
-          type: string
-          enum: [news, job, scholarship, announcement]
+        category: { type: string, enum: [news, impact, development] }
+        imageUrl: { type: [string, "null"] }
     PostUpdate:
       type: object
       properties:
-        title: { type: string, minLength: 1 }
-        body: { type: string, minLength: 1 }
-        category:
-          type: string
-          enum: [news, job, scholarship, announcement]
-    Event:
-      type: object
-      required: [id, title, startsAt, createdAt]
-      properties:
-        id: { type: integer }
-        title: { type: string }
-        description: { type: ["string", "null"] }
-        location: { type: ["string", "null"] }
-        startsAt: { type: string }
-        createdAt: { type: string }
-    EventInput:
-      type: object
-      required: [title, startsAt]
-      properties:
-        title: { type: string, minLength: 1 }
-        description: { type: ["string", "null"] }
-        location: { type: ["string", "null"] }
-        startsAt: { type: string, minLength: 1 }
-    Notification:
-      type: object
-      required: [id, title, body, broadcast, read, createdAt]
-      properties:
-        id: { type: integer }
         title: { type: string }
         body: { type: string }
-        broadcast: { type: boolean }
-        read: { type: boolean }
+        category: { type: string, enum: [news, impact, development] }
+        imageUrl: { type: [string, "null"] }
+
+    CommunityUpdate:
+      type: object
+      required: [id, title, body, urgent, createdAt]
+      properties:
+        id: { type: integer }
+        villageId: { type: [integer, "null"] }
+        villageName: { type: [string, "null"] }
+        authorId: { type: integer }
+        authorName: { type: [string, "null"] }
+        title: { type: string }
+        body: { type: string }
+        urgent: { type: boolean }
         createdAt: { type: string }
-    NotificationInput:
+    CommunityUpdateInput:
       type: object
       required: [title, body]
       properties:
         title: { type: string, minLength: 1 }
         body: { type: string, minLength: 1 }
-        memberId:
-          type: ["integer", "null"]
-          description: Target member id; omit or null to broadcast to all members
-    MembersSummary:
+        urgent: { type: boolean }
+        villageId: { type: [integer, "null"] }
+
+    Notification:
       type: object
-      required: [totalMembers, activeMembers, pendingMembers, coordinators]
+      required: [id, title, body, kind, read, createdAt]
       properties:
-        totalMembers: { type: integer }
-        activeMembers: { type: integer }
-        pendingMembers: { type: integer }
-        coordinators: { type: integer }
+        id: { type: integer }
+        title: { type: string }
+        body: { type: string }
+        kind: { type: string }
+        read: { type: boolean }
+        createdAt: { type: string }
+    MessageSendInput:
+      type: object
+      required: [title, body]
+      properties:
+        title: { type: string, minLength: 1 }
+        body: { type: string, minLength: 1 }
+        userIds:
+          type: [array, "null"]
+          items: { type: integer }
+        villageId: { type: [integer, "null"] }
+    SendMessageResult:
+      type: object
+      required: [notified]
+      properties:
+        notified: { type: integer }
+
+    FeedbackReport:
+      type: object
+      required: [id, userId, category, body, status, createdAt]
+      properties:
+        id: { type: integer }
+        userId: { type: integer }
+        memberName: { type: [string, "null"] }
+        membershipCode: { type: [string, "null"] }
+        villageName: { type: [string, "null"] }
+        category: { type: string }
+        body: { type: string }
+        status: { type: string }
+        response: { type: [string, "null"] }
+        createdAt: { type: string }
+    FeedbackInput:
+      type: object
+      required: [category, body]
+      properties:
+        category:
+          type: string
+          enum: [leadership_concern, security_issue, dues_dispute, other]
+        body: { type: string, minLength: 1 }
+    FeedbackUpdate:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [open, reviewed, resolved] }
+        response: { type: [string, "null"] }
+
+    TrainingSession:
+      type: object
+      required: [id, title, scheduledOn, status, registeredCount, createdAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: [string, "null"] }
+        skillArea: { type: [string, "null"] }
+        scheduledOn: { type: string }
+        location: { type: [string, "null"] }
+        villageId: { type: [integer, "null"] }
+        villageName: { type: [string, "null"] }
+        capacity: { type: [integer, "null"] }
+        status: { type: string }
+        registeredCount: { type: integer }
+        myRegistrationStatus: { type: [string, "null"] }
+        createdAt: { type: string }
+    TrainingSessionInput:
+      type: object
+      required: [title, scheduledOn]
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: [string, "null"] }
+        skillArea: { type: [string, "null"] }
+        scheduledOn: { type: string }
+        location: { type: [string, "null"] }
+        villageId: { type: [integer, "null"] }
+        capacity: { type: [integer, "null"] }
+    TrainingRegistration:
+      type: object
+      required: [id, sessionId, userId, status, createdAt]
+      properties:
+        id: { type: integer }
+        sessionId: { type: integer }
+        userId: { type: integer }
+        memberName: { type: [string, "null"] }
+        membershipCode: { type: [string, "null"] }
+        status: { type: string }
+        completedAt: { type: [string, "null"] }
+        createdAt: { type: string }
+    TrainingProgressBody:
+      type: object
+      required: [userIds, status]
+      properties:
+        userIds:
+          type: array
+          items: { type: integer }
+          minItems: 1
+        status:
+          type: string
+          enum: [attended, completed]
+    TrainingCompletion:
+      type: object
+      required: [sessionId, title]
+      properties:
+        sessionId: { type: integer }
+        title: { type: string }
+        skillArea: { type: [string, "null"] }
+        completedAt: { type: [string, "null"] }
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string, minLength: 1 }
+        size: { type: integer, minimum: 1 }
+        contentType: { type: string, minLength: 1 }
+        purpose:
+          type: string
+          enum: [profile_photo, cv, meeting_photo, meeting_video, attendance_video, receipt, general]
+          default: general
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL: { type: string, format: uri }
+        objectPath: { type: string }
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"

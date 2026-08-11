@@ -1,188 +1,94 @@
 import { Router, type IRouter } from "express";
-import { and, eq, ilike, or, desc, sql, countDistinct } from "drizzle-orm";
-import { db, votersTable } from "@workspace/db";
+import { and, eq, ilike, or, type SQL } from "drizzle-orm";
+import { db, votersTable, villagesTable, unitsTable } from "@workspace/db";
 import {
   ListVotersQueryParams,
   ListVotersResponse,
-  CreateVoterBody,
-  CreateVoterResponse,
-  GetVoterParams,
-  GetVoterResponse,
-  UpdateVoterParams,
-  UpdateVoterBody,
-  UpdateVoterResponse,
-  DeleteVoterParams,
-  GetStatsSummaryResponse,
-  GetStatsByLgaResponse,
-  GetStatsBySupportLevelResponse,
-  GetRecentVotersResponse,
+  ImportVotersBody,
+  ImportVotersResponse,
 } from "@workspace/api-zod";
-import { requireAdmin } from "../middlewares/auth";
+import { requireHq } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-// All voter data and voter statistics are staff-only (admin).
-router.use(requireAdmin);
-
-type VoterRow = typeof votersTable.$inferSelect;
-const serializeVoter = (v: VoterRow) => ({
-  ...v,
-  createdAt: v.createdAt.toISOString(),
-});
-
-router.get("/voters", async (req, res): Promise<void> => {
+router.get("/voters", requireHq, async (req, res): Promise<void> => {
   const parsed = ListVotersQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const { search, lga, ward, supportLevel, contactStatus } = parsed.data;
-
-  const conditions = [];
-  if (search) {
-    const pattern = `%${search}%`;
-    conditions.push(
+  const conds: SQL[] = [];
+  if (parsed.data.villageId !== undefined)
+    conds.push(eq(votersTable.villageId, parsed.data.villageId));
+  if (parsed.data.search) {
+    const s = `%${parsed.data.search}%`;
+    conds.push(
       or(
-        ilike(votersTable.firstName, pattern),
-        ilike(votersTable.lastName, pattern),
-        ilike(votersTable.vin, pattern),
-        ilike(votersTable.phone, pattern),
-        ilike(
-          sql`${votersTable.firstName} || ' ' || ${votersTable.lastName}`,
-          pattern,
-        ),
-      ),
+        ilike(votersTable.firstName, s),
+        ilike(votersTable.lastName, s),
+        ilike(votersTable.vin, s),
+        ilike(votersTable.phone, s),
+      )!,
     );
   }
-  if (lga) conditions.push(eq(votersTable.lga, lga));
-  if (ward) conditions.push(ilike(votersTable.ward, `%${ward}%`));
-  if (supportLevel) conditions.push(eq(votersTable.supportLevel, supportLevel));
-  if (contactStatus)
-    conditions.push(eq(votersTable.contactStatus, contactStatus));
-
-  const voters = await db
+  const rows = await db
     .select()
     .from(votersTable)
-    .where(conditions.length ? and(...conditions) : undefined)
-    .orderBy(desc(votersTable.createdAt));
-
-  res.json(ListVotersResponse.parse(voters.map(serializeVoter)));
+    .where(conds.length ? and(...conds) : undefined)
+    .orderBy(votersTable.lastName, votersTable.firstName)
+    .limit(1000);
+  res.json(ListVotersResponse.parse(rows.map(({ createdAt: _c, ...v }) => v)));
 });
 
-router.post("/voters", async (req, res): Promise<void> => {
-  const parsed = CreateVoterBody.safeParse(req.body);
+router.post("/voters/import", requireHq, async (req, res): Promise<void> => {
+  const parsed = ImportVotersBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [voter] = await db.insert(votersTable).values(parsed.data).returning();
-  res.status(201).json(CreateVoterResponse.parse(serializeVoter(voter)));
-});
-
-router.get("/voters/:id", async (req, res): Promise<void> => {
-  const params = GetVoterParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
+  const villages = await db.select().from(villagesTable);
+  const units = await db.select().from(unitsTable);
+  let imported = 0;
+  let skipped = 0;
+  for (const row of parsed.data.rows) {
+    const village = row.villageName
+      ? villages.find(
+          (v) => v.name.toLowerCase() === row.villageName!.toLowerCase(),
+        )
+      : undefined;
+    const unit =
+      row.unitName && village
+        ? units.find(
+            (u) =>
+              u.villageId === village.id &&
+              u.name.toLowerCase() === row.unitName!.toLowerCase(),
+          )
+        : undefined;
+    if (row.vin) {
+      const [dupe] = await db
+        .select({ id: votersTable.id })
+        .from(votersTable)
+        .where(ilike(votersTable.vin, row.vin))
+        .limit(1);
+      if (dupe) {
+        skipped++;
+        continue;
+      }
+    }
+    await db.insert(votersTable).values({
+      firstName: row.firstName,
+      lastName: row.lastName,
+      gender: row.gender ?? null,
+      phone: row.phone ?? null,
+      vin: row.vin ?? null,
+      dateOfBirth: row.dateOfBirth ?? null,
+      occupation: row.occupation ?? null,
+      villageId: village?.id ?? null,
+      unitId: unit?.id ?? null,
+    });
+    imported++;
   }
-  const [voter] = await db
-    .select()
-    .from(votersTable)
-    .where(eq(votersTable.id, params.data.id));
-  if (!voter) {
-    res.status(404).json({ error: "Voter not found" });
-    return;
-  }
-  res.json(GetVoterResponse.parse(serializeVoter(voter)));
-});
-
-router.patch("/voters/:id", async (req, res): Promise<void> => {
-  const params = UpdateVoterParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const parsed = UpdateVoterBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const [voter] = await db
-    .update(votersTable)
-    .set(parsed.data)
-    .where(eq(votersTable.id, params.data.id))
-    .returning();
-  if (!voter) {
-    res.status(404).json({ error: "Voter not found" });
-    return;
-  }
-  res.json(UpdateVoterResponse.parse(serializeVoter(voter)));
-});
-
-router.delete("/voters/:id", async (req, res): Promise<void> => {
-  const params = DeleteVoterParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const [voter] = await db
-    .delete(votersTable)
-    .where(eq(votersTable.id, params.data.id))
-    .returning();
-  if (!voter) {
-    res.status(404).json({ error: "Voter not found" });
-    return;
-  }
-  res.sendStatus(204);
-});
-
-router.get("/stats/summary", async (_req, res): Promise<void> => {
-  const [row] = await db
-    .select({
-      totalVoters: sql<number>`count(*)::int`,
-      strongSupporters: sql<number>`count(*) filter (where ${votersTable.supportLevel} = 'strong')::int`,
-      contacted: sql<number>`count(*) filter (where ${votersTable.contactStatus} <> 'not_contacted')::int`,
-      notContacted: sql<number>`count(*) filter (where ${votersTable.contactStatus} = 'not_contacted')::int`,
-      lgasCovered: countDistinct(votersTable.lga),
-      wardsCovered: countDistinct(
-        sql`${votersTable.lga} || '|' || ${votersTable.ward}`,
-      ),
-    })
-    .from(votersTable);
-  res.json(GetStatsSummaryResponse.parse(row));
-});
-
-router.get("/stats/by-lga", async (_req, res): Promise<void> => {
-  const rows = await db
-    .select({
-      lga: votersTable.lga,
-      count: sql<number>`count(*)::int`,
-    })
-    .from(votersTable)
-    .groupBy(votersTable.lga)
-    .orderBy(desc(sql`count(*)`));
-  res.json(GetStatsByLgaResponse.parse(rows));
-});
-
-router.get("/stats/by-support-level", async (_req, res): Promise<void> => {
-  const rows = await db
-    .select({
-      supportLevel: votersTable.supportLevel,
-      count: sql<number>`count(*)::int`,
-    })
-    .from(votersTable)
-    .groupBy(votersTable.supportLevel)
-    .orderBy(desc(sql`count(*)`));
-  res.json(GetStatsBySupportLevelResponse.parse(rows));
-});
-
-router.get("/stats/recent", async (_req, res): Promise<void> => {
-  const voters = await db
-    .select()
-    .from(votersTable)
-    .orderBy(desc(votersTable.createdAt))
-    .limit(8);
-  res.json(GetRecentVotersResponse.parse(voters.map(serializeVoter)));
+  res.json(ImportVotersResponse.parse({ imported, skipped }));
 });
 
 export default router;

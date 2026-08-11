@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from '@clerk/react';
+import { ClerkProvider, SignIn, Show, useClerk } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
 import { Switch, Route, Redirect, useLocation, Router as WouterRouter } from 'wouter';
@@ -13,32 +13,42 @@ import NotFound from "@/pages/not-found";
 import { PublicLayout } from "@/components/public-layout";
 import { DashboardLayout } from "@/components/dashboard-layout";
 
+// Public Pages
 import { Home } from "@/pages/home";
 import { About } from "@/pages/about";
-import { Contact } from "@/pages/contact";
+import { Leaders } from "@/pages/leaders";
 import { News } from "@/pages/news";
+import { Eligibility } from "@/pages/eligibility";
+import { Register } from "@/pages/register";
 
-import { Onboarding } from "@/pages/onboarding";
-import { MemberDashboard } from "@/pages/member-dashboard";
-import { Profile } from "@/pages/profile";
-import { Opportunities } from "@/pages/opportunities";
-import { Notifications } from "@/pages/notifications";
+// Portal Pages
+import { Dashboard } from "@/pages/portal/dashboard";
+import { Profile } from "@/pages/portal/profile";
+import { Members } from "@/pages/portal/members";
+import { MemberDetail } from "@/pages/portal/member-detail";
+import { Enroll } from "@/pages/portal/enroll";
+import { Dues } from "@/pages/portal/dues";
+import { Training } from "@/pages/portal/training";
+import { Meetings } from "@/pages/portal/meetings";
+import { MeetingNew } from "@/pages/portal/meeting-new";
+import { MeetingDetail } from "@/pages/portal/meeting-detail";
+import { Checkin } from "@/pages/portal/checkin";
+import { Calendar } from "@/pages/portal/calendar";
+import { Updates } from "@/pages/portal/updates";
+import { Feedback } from "@/pages/portal/feedback";
+import { Notifications } from "@/pages/portal/notifications";
 
-import { AdminDashboard } from "@/pages/admin-dashboard";
-import { AdminMembers } from "@/pages/admin-members";
-import { AdminContent } from "@/pages/admin-content";
-import { AdminNotifications } from "@/pages/admin-notifications";
-
-// Voter endpoints
-import { Voters } from "@/pages/voters";
-import { RegisterVoter } from "@/pages/register";
-import { VoterDetail } from "@/pages/voter-detail";
+// Admin Pages
+import { AdminRequests } from "@/pages/admin/requests";
+import { AdminFeedback } from "@/pages/admin/feedback";
+import { AdminVoters } from "@/pages/admin/voters";
+import { AdminMessaging } from "@/pages/admin/messaging";
+import { AdminContent } from "@/pages/admin/content";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error: any) => {
-        // Don't retry on 401/403/404
         if (error?.response?.status === 401 || 
             error?.response?.status === 403 || 
             error?.response?.status === 404) return false;
@@ -75,40 +85,40 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "hsl(153, 60%, 25%)",
-    colorForeground: "hsl(153, 50%, 12%)",
-    colorMutedForeground: "hsl(153, 20%, 45%)",
+    colorPrimary: "hsl(150, 60%, 25%)",
+    colorForeground: "hsl(150, 50%, 12%)",
+    colorMutedForeground: "hsl(150, 20%, 45%)",
     colorDanger: "hsl(0, 75%, 55%)",
     colorBackground: "hsl(0, 0%, 100%)",
-    colorInput: "hsl(153, 20%, 88%)",
-    colorInputForeground: "hsl(153, 50%, 12%)",
-    colorNeutral: "hsl(153, 20%, 88%)",
+    colorInput: "hsl(150, 20%, 88%)",
+    colorInputForeground: "hsl(150, 50%, 12%)",
+    colorNeutral: "hsl(150, 20%, 88%)",
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     borderRadius: "0.5rem",
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "bg-white rounded-2xl w-[440px] max-w-full overflow-hidden border border-border shadow-xl",
+    cardBox: "bg-white rounded-xl w-[440px] max-w-full overflow-hidden border border-border shadow-2xl",
     card: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    footer: "!shadow-none !border-0 !bg-transparent !rounded-none bg-muted/50",
-    headerTitle: "text-2xl font-serif font-bold text-foreground",
-    headerSubtitle: "text-muted-foreground",
-    socialButtonsBlockButtonText: "text-foreground font-medium",
-    formFieldLabel: "text-foreground font-semibold",
+    footer: "!shadow-none !border-0 !bg-transparent !rounded-none bg-muted/30",
+    headerTitle: "text-2xl font-serif font-bold text-foreground tracking-tight",
+    headerSubtitle: "text-muted-foreground font-medium",
+    socialButtonsBlockButtonText: "text-foreground font-bold",
+    formFieldLabel: "text-foreground font-bold",
     footerActionLink: "text-primary hover:text-primary/80 font-bold",
-    footerActionText: "text-muted-foreground",
-    dividerText: "text-muted-foreground bg-white",
+    footerActionText: "text-muted-foreground font-medium",
+    dividerText: "text-muted-foreground bg-white font-bold text-xs uppercase tracking-widest",
     identityPreviewEditButton: "text-primary",
-    formFieldSuccessText: "text-emerald-600",
-    alertText: "text-destructive",
-    logoBox: "h-16 flex items-center justify-center mb-4",
-    logoImage: "h-full w-auto",
-    socialButtonsBlockButton: "border-border hover:bg-muted transition-colors",
-    formButtonPrimary: "bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-sm transition-all",
-    formFieldInput: "border-border focus:ring-ring focus:border-ring bg-white text-foreground placeholder:text-muted-foreground",
-    footerAction: "bg-muted/50 py-4 px-8 border-t border-border mt-6",
+    formFieldSuccessText: "text-emerald-600 font-bold",
+    alertText: "text-destructive font-bold",
+    logoBox: "h-20 flex items-center justify-center mb-6 bg-primary/5 rounded-lg border border-primary/10",
+    logoImage: "h-12 w-auto filter grayscale opacity-80",
+    socialButtonsBlockButton: "border-border hover:bg-muted transition-colors shadow-sm",
+    formButtonPrimary: "bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md transition-all h-11",
+    formFieldInput: "border-border focus:ring-ring focus:border-ring bg-white text-foreground placeholder:text-muted-foreground h-11 shadow-sm",
+    footerAction: "bg-muted/30 py-5 px-8 border-t border-border mt-6",
     dividerLine: "bg-border",
-    alert: "bg-destructive/10 border-destructive/20",
+    alert: "bg-destructive/10 border-destructive/20 text-destructive",
     otpCodeFieldInput: "border-border text-foreground",
     formFieldRow: "space-y-4",
     main: "p-8",
@@ -118,18 +128,8 @@ const clerkAppearance = {
 function SignInPage() {
   return (
     <PublicLayout>
-      <div className="flex min-h-[70dvh] items-center justify-center px-4 py-12">
-        <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
-      </div>
-    </PublicLayout>
-  );
-}
-
-function SignUpPage() {
-  return (
-    <PublicLayout>
-      <div className="flex min-h-[70dvh] items-center justify-center px-4 py-12">
-        <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+      <div className="flex min-h-[75dvh] items-center justify-center px-4 py-16 bg-muted/20">
+        <SignIn routing="path" path={`${basePath}/sign-in`} />
       </div>
     </PublicLayout>
   );
@@ -157,49 +157,75 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
-function MemberRouteWrapper({ children }: { children: React.ReactNode }) {
+const COORDINATOR_ROLES = ["unit_leader", "village_head", "secretary", "treasurer", "assistant", "founder"];
+
+function MemberRouteWrapper({
+  children,
+  coordinatorOnly,
+}: {
+  children: React.ReactNode;
+  coordinatorOnly?: boolean;
+}) {
   const { data: member, isLoading, error } = useGetMe({ 
     query: { queryKey: ["/api/me"] } 
   });
-  const [location, setLocation] = useLocation();
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (error && (error as any).response?.status === 404) {
-        // Needs onboarding
-        if (location !== "/onboarding") {
-          setLocation("/onboarding");
-        }
-      } else if (member && location === "/onboarding") {
-        // Already onboarded, shouldn't be here
-        setLocation("/dashboard");
-      }
-    }
-  }, [member, isLoading, error, location, setLocation]);
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center font-serif text-lg font-bold text-primary animate-pulse">Loading Institution Portal...</div>;
   }
 
-  // If error 404, we let them see the children which should be the onboarding component, or redirect happens
+  if (coordinatorOnly && member && !COORDINATOR_ROLES.includes(member.role)) {
+    return (
+      <PublicLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-md mx-auto px-4">
+          <h2 className="text-2xl font-bold font-serif mb-3">Coordinator Access Only</h2>
+          <p className="text-muted-foreground">
+            This area is reserved for coordinators. If you believe you should have access, contact HQ.
+          </p>
+        </div>
+      </PublicLayout>
+    );
+  }
+
+  const status = (error as any)?.response?.status;
+  if (error && (status === 404 || status === 403)) {
+    return (
+      <PublicLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-md mx-auto px-4">
+          <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </div>
+          <h2 className="text-2xl font-bold font-serif mb-3">Membership Not Found</h2>
+          <p className="text-muted-foreground mb-8">
+            Your login is valid, but we cannot find an active member record associated with this account. Membership accounts are created exclusively by Coordinators.
+          </p>
+          <div className="space-y-3 w-full">
+            <p className="text-sm font-bold">Please contact your Village Coordinator for assistance.</p>
+          </div>
+        </div>
+      </PublicLayout>
+    );
+  }
+
   return <>{children}</>;
 }
 
-function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
+function HQRouteWrapper({ children }: { children: React.ReactNode }) {
   const { data: member, isLoading } = useGetMe({ 
     query: { queryKey: ["/api/me"] } 
   });
   
-  if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   
-  if (member?.role !== "admin") {
+  if (member?.role !== "founder" && member?.role !== "assistant") {
     return (
       <DashboardLayout>
-        <div className="flex flex-col items-center justify-center h-[60vh] text-center">
-          <h2 className="text-2xl font-bold font-serif mb-2">Access Denied</h2>
-          <p className="text-muted-foreground">You do not have administrative privileges to view this page.</p>
+        <div className="flex flex-col items-center justify-center h-[60vh] text-center max-w-md mx-auto">
+          <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <h2 className="text-2xl font-bold font-serif mb-2">HQ Clearance Required</h2>
+          <p className="text-muted-foreground">This section is restricted to Headquarters administration.</p>
         </div>
       </DashboardLayout>
     );
@@ -207,7 +233,6 @@ function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
   
   return <>{children}</>;
 }
-
 
 function HomeRedirect() {
   return (
@@ -231,20 +256,13 @@ function ClerkProviderWithRoutes() {
       proxyUrl={clerkProxyUrl}
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
-      signUpUrl={`${basePath}/sign-up`}
       localization={{
         signIn: {
           start: {
-            title: "Sign in to Greater Bayelsa",
-            subtitle: "Access your member portal",
+            title: "Member Login",
+            subtitle: "Access the Greater Bayelsa Portal",
           },
-        },
-        signUp: {
-          start: {
-            title: "Join the Movement",
-            subtitle: "Create an account to become a member",
-          },
-        },
+        }
       }}
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
@@ -255,32 +273,20 @@ function ClerkProviderWithRoutes() {
         <ErrorBoundary>
         <Switch>
           <Route path="/" component={HomeRedirect} />
-          <Route path="/about" component={() => <PublicLayout><About /></PublicLayout>} />
-          <Route path="/contact" component={() => <PublicLayout><Contact /></PublicLayout>} />
-          <Route path="/news" component={() => <PublicLayout><News /></PublicLayout>} />
-          <Route path="/news/:id" component={() => <PublicLayout><News detail /></PublicLayout>} />
+          <Route path="/about" component={About} />
+          <Route path="/leaders" component={Leaders} />
+          <Route path="/news">{() => <News />}</Route>
+          <Route path="/news/:id">{() => <News detail />}</Route>
+          <Route path="/eligibility" component={Eligibility} />
+          <Route path="/register" component={Register} />
           
           <Route path="/sign-in/*?" component={SignInPage} />
-          <Route path="/sign-up/*?" component={SignUpPage} />
 
-          {/* Member Portal Routes */}
-          <Route path="/onboarding">
-            <Show when="signed-in">
-              <MemberRouteWrapper>
-                <PublicLayout>
-                  <Onboarding />
-                </PublicLayout>
-              </MemberRouteWrapper>
-            </Show>
-            <Show when="signed-out">
-              <Redirect to="/sign-in" />
-            </Show>
-          </Route>
-
+          {/* Portal Routes */}
           <Route path="/dashboard">
             <Show when="signed-in">
               <MemberRouteWrapper>
-                <DashboardLayout><MemberDashboard /></DashboardLayout>
+                <DashboardLayout><Dashboard /></DashboardLayout>
               </MemberRouteWrapper>
             </Show>
             <Show when="signed-out"><Redirect to="/sign-in" /></Show>
@@ -295,10 +301,109 @@ function ClerkProviderWithRoutes() {
             <Show when="signed-out"><Redirect to="/sign-in" /></Show>
           </Route>
 
-          <Route path="/opportunities">
+          <Route path="/members">
             <Show when="signed-in">
               <MemberRouteWrapper>
-                <DashboardLayout><Opportunities /></DashboardLayout>
+                <DashboardLayout><Members /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/members/:id">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <DashboardLayout><MemberDetail /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/enroll">
+            <Show when="signed-in">
+              <MemberRouteWrapper coordinatorOnly>
+                <DashboardLayout><Enroll /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/dues">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <DashboardLayout><Dues /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/training">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <DashboardLayout><Training /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/meetings">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <DashboardLayout><Meetings /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/meetings/new">
+            <Show when="signed-in">
+              <MemberRouteWrapper coordinatorOnly>
+                <DashboardLayout><MeetingNew /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/meetings/:id">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <DashboardLayout><MeetingDetail /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/checkin">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <DashboardLayout><Checkin /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/calendar">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <DashboardLayout><Calendar /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/updates">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <DashboardLayout><Updates /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/feedback">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <DashboardLayout><Feedback /></DashboardLayout>
               </MemberRouteWrapper>
             </Show>
             <Show when="signed-out"><Redirect to="/sign-in" /></Show>
@@ -314,23 +419,45 @@ function ClerkProviderWithRoutes() {
           </Route>
 
           {/* Admin Routes */}
-          <Route path="/admin">
+          <Route path="/admin/requests">
             <Show when="signed-in">
               <MemberRouteWrapper>
-                <AdminRouteWrapper>
-                  <DashboardLayout><AdminDashboard /></DashboardLayout>
-                </AdminRouteWrapper>
+                <HQRouteWrapper>
+                  <DashboardLayout><AdminRequests /></DashboardLayout>
+                </HQRouteWrapper>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+          
+          <Route path="/admin/feedback">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <HQRouteWrapper>
+                  <DashboardLayout><AdminFeedback /></DashboardLayout>
+                </HQRouteWrapper>
               </MemberRouteWrapper>
             </Show>
             <Show when="signed-out"><Redirect to="/sign-in" /></Show>
           </Route>
 
-          <Route path="/admin/members">
+          <Route path="/admin/voters">
             <Show when="signed-in">
               <MemberRouteWrapper>
-                <AdminRouteWrapper>
-                  <DashboardLayout><AdminMembers /></DashboardLayout>
-                </AdminRouteWrapper>
+                <HQRouteWrapper>
+                  <DashboardLayout><AdminVoters /></DashboardLayout>
+                </HQRouteWrapper>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/admin/messaging">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <HQRouteWrapper>
+                  <DashboardLayout><AdminMessaging /></DashboardLayout>
+                </HQRouteWrapper>
               </MemberRouteWrapper>
             </Show>
             <Show when="signed-out"><Redirect to="/sign-in" /></Show>
@@ -339,54 +466,9 @@ function ClerkProviderWithRoutes() {
           <Route path="/admin/content">
             <Show when="signed-in">
               <MemberRouteWrapper>
-                <AdminRouteWrapper>
+                <HQRouteWrapper>
                   <DashboardLayout><AdminContent /></DashboardLayout>
-                </AdminRouteWrapper>
-              </MemberRouteWrapper>
-            </Show>
-            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
-          </Route>
-          
-          <Route path="/admin/notifications">
-            <Show when="signed-in">
-              <MemberRouteWrapper>
-                <AdminRouteWrapper>
-                  <DashboardLayout><AdminNotifications /></DashboardLayout>
-                </AdminRouteWrapper>
-              </MemberRouteWrapper>
-            </Show>
-            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
-          </Route>
-
-          {/* Legacy Voter Routes mapped under Admin */}
-          <Route path="/admin/voters">
-            <Show when="signed-in">
-              <MemberRouteWrapper>
-                <AdminRouteWrapper>
-                  <DashboardLayout><Voters /></DashboardLayout>
-                </AdminRouteWrapper>
-              </MemberRouteWrapper>
-            </Show>
-            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
-          </Route>
-
-          <Route path="/admin/voters/:id">
-            <Show when="signed-in">
-              <MemberRouteWrapper>
-                <AdminRouteWrapper>
-                  <DashboardLayout><VoterDetail /></DashboardLayout>
-                </AdminRouteWrapper>
-              </MemberRouteWrapper>
-            </Show>
-            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
-          </Route>
-
-          <Route path="/admin/register">
-            <Show when="signed-in">
-              <MemberRouteWrapper>
-                <AdminRouteWrapper>
-                  <DashboardLayout><RegisterVoter /></DashboardLayout>
-                </AdminRouteWrapper>
+                </HQRouteWrapper>
               </MemberRouteWrapper>
             </Show>
             <Show when="signed-out"><Redirect to="/sign-in" /></Show>

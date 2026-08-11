@@ -1,374 +1,273 @@
 import { useState, useRef, useEffect } from "react";
-import { useLocation } from "wouter";
-import { useCreateVoter } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { PublicLayout } from "@/components/public-layout";
+import { useListVillages, useScreeningChat } from "@workspace/api-client-react";
+import { buttonVariants, Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { LGAS, SUPPORT_LEVELS, CONTACT_STATUSES, GENDERS } from "@/lib/constants";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
-import { Link } from "wouter";
+import { MapPin, Users, MessageSquare, Send, ShieldAlert, CheckCircle2, ArrowRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
-const voterSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  gender: z.enum(["male", "female"]),
-  phone: z.string().optional(),
-  vin: z.string().optional(),
-  dateOfBirth: z.string().optional(),
-  occupation: z.string().optional(),
-  lga: z.string().min(1, "LGA is required"),
-  ward: z.string().min(1, "Ward is required"),
-  pollingUnit: z.string().min(1, "Polling Unit is required"),
-  supportLevel: z.enum(["strong", "leaning", "undecided", "opposed", "unknown"]).default("unknown"),
-  contactStatus: z.enum(["not_contacted", "contacted", "follow_up", "unreachable"]).default("not_contacted"),
-  notes: z.string().optional(),
-});
-
-type VoterFormValues = z.infer<typeof voterSchema>;
-
-export function RegisterVoter() {
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const createVoter = useCreateVoter();
-  const mutateFnRef = useRef(createVoter.mutate);
-  
-  useEffect(() => {
-    mutateFnRef.current = createVoter.mutate;
-  }, [createVoter.mutate]);
-
-  const form = useForm<VoterFormValues>({
-    resolver: zodResolver(voterSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      gender: "male",
-      phone: "",
-      vin: "",
-      dateOfBirth: "",
-      occupation: "",
-      lga: "",
-      ward: "",
-      pollingUnit: "",
-      supportLevel: "unknown",
-      contactStatus: "not_contacted",
-      notes: "",
-    },
+export function Register() {
+  const { data: villages, isLoading } = useListVillages({
+    query: { queryKey: ["/api/villages"] }
   });
 
-  const onSubmit = (data: VoterFormValues) => {
-    // Convert empty strings to undefined to match API schema optional fields
-    const formattedData = {
-      ...data,
-      phone: data.phone || undefined,
-      vin: data.vin || undefined,
-      dateOfBirth: data.dateOfBirth || undefined,
-      occupation: data.occupation || undefined,
-      notes: data.notes || undefined,
-    };
+  const [selectedVillage, setSelectedVillage] = useState<number | null>(null);
 
-    mutateFnRef.current({ data: formattedData }, {
-      onSuccess: (response) => {
-        toast({
-          title: "Voter Registered",
-          description: "The voter has been successfully added to the database.",
-          variant: "default",
-        });
-        queryClient.invalidateQueries({ queryKey: ["/api/voters"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/stats/summary"] });
-        setLocation(`/admin/voters/${response.id}`);
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Registration Failed",
-          description: error?.response?.data?.error || "An unexpected error occurred.",
-          variant: "destructive",
-        });
+  return (
+    <PublicLayout>
+      <div className="bg-muted/30 pt-16 pb-20 border-b">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="max-w-3xl mx-auto text-center animate-in-stagger">
+            <h1 className="text-4xl md:text-5xl font-bold font-serif mb-6 tracking-tight">Register for Membership</h1>
+            <p className="text-lg text-muted-foreground leading-relaxed font-medium mb-8">
+              Select your village below to contact a coordinator. You will go through an initial automated screening to verify eligibility.
+            </p>
+            <div className="inline-flex items-center text-sm font-bold text-amber-600 bg-amber-50 px-4 py-2 rounded-full border border-amber-200">
+              <ShieldAlert className="h-4 w-4 mr-2" /> Self-registration is strictly prohibited.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 md:px-6 py-20">
+        {isLoading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className="bg-card rounded-2xl border p-6">
+                <Skeleton className="h-6 w-1/2 mb-4" />
+                <Skeleton className="h-4 w-1/3 mb-6" />
+                <div className="flex gap-4">
+                  <Skeleton className="w-12 h-12 rounded-full" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {villages?.map((village) => (
+              <div key={village.id} className="bg-card rounded-2xl border shadow-sm p-6 flex flex-col hover:border-primary/50 transition-colors">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h3 className="text-xl font-bold font-serif flex items-center">
+                      <MapPin className="h-5 w-5 text-primary mr-2" />
+                      {village.name}
+                    </h3>
+                    <p className="text-muted-foreground text-sm font-medium mt-1 flex items-center">
+                      <Users className="h-4 w-4 mr-1" /> {village.memberCount} Members
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex-1">
+                  {village.coordinator ? (
+                    <div className="flex gap-4 items-center bg-muted/30 p-3 rounded-xl border border-border/50 mb-6">
+                      {village.coordinator.photoUrl ? (
+                        <img 
+                          src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/storage${village.coordinator.photoUrl}`}
+                          alt={village.coordinator.firstName}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-background shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary border-2 border-background shadow-sm">
+                          {village.coordinator.firstName[0]}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Coordinator</p>
+                        <p className="font-bold text-sm">{village.coordinator.firstName} {village.coordinator.lastName}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-muted/30 p-3 rounded-xl border border-dashed border-border/50 mb-6 text-center">
+                      <p className="text-sm font-medium text-muted-foreground">Coordinator Pending</p>
+                    </div>
+                  )}
+                </div>
+
+                <Button 
+                  onClick={() => setSelectedVillage(village.id)}
+                  
+                  className="w-full font-bold shadow-sm"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Contact Coordinator
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <ScreeningDialog 
+        villageId={selectedVillage} 
+        onClose={() => setSelectedVillage(null)} 
+        villageName={villages?.find(v => v.id === selectedVillage)?.name}
+        coordinatorName={
+          villages?.find(v => v.id === selectedVillage)?.coordinator 
+            ? `${villages?.find(v => v.id === selectedVillage)?.coordinator?.firstName} ${villages?.find(v => v.id === selectedVillage)?.coordinator?.lastName}`
+            : undefined
+        }
+      />
+    </PublicLayout>
+  );
+}
+
+type Message = { role: "user" | "assistant", content: string };
+
+function ScreeningDialog({ 
+  villageId, 
+  onClose,
+  villageName,
+  coordinatorName
+}: { 
+  villageId: number | null, 
+  onClose: () => void,
+  villageName?: string,
+  coordinatorName?: string
+}) {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [eligible, setEligible] = useState<boolean | null>(null);
+  const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const chatMutation = useScreeningChat();
+
+  // Reset when opened
+  useEffect(() => {
+    if (villageId) {
+      setMessages([{
+        role: "assistant", 
+        content: `Welcome to the ${villageName} screening. I am the AI assistant for Coordinator ${coordinatorName}. Before I connect you, I need to verify your eligibility. Are you a registered voter in this village? What is your full name?`
+      }]);
+      setEligible(null);
+      setWhatsappUrl(null);
+      setInput("");
+    }
+  }, [villageId, villageName, coordinatorName]);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || !villageId || chatMutation.isPending || eligible !== null) return;
+
+    const newMsg: Message = { role: "user", content: input };
+    const nextMessages = [...messages, newMsg];
+    setMessages(nextMessages);
+    setInput("");
+
+    chatMutation.mutate({
+      data: {
+        villageId,
+        messages: nextMessages
+      }
+    }, {
+      onSuccess: (data) => {
+        setMessages(prev => [...prev, { role: "assistant", content: data.reply }]);
+        if (data.eligible !== null) {
+          setEligible(data.eligible);
+          if (data.whatsappUrl) {
+            setWhatsappUrl(data.whatsappUrl);
+          }
+        }
       }
     });
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/voters" className={buttonVariants({ variant: "ghost", size: "icon", className: "rounded-full" })}>
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Register Voter</h1>
-          <p className="text-muted-foreground mt-1">Add a new constituent to the Greater Bayelsa database.</p>
+    <Dialog open={villageId !== null} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md h-[80vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
+        <DialogHeader className="p-4 border-b bg-card">
+          <DialogTitle className="font-serif text-xl">Screening Chat</DialogTitle>
+          <DialogDescription>
+            {villageName} • Coordinator {coordinatorName}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/10" ref={scrollRef}>
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[85%] p-3 rounded-2xl ${
+                m.role === 'user' 
+                  ? 'bg-primary text-primary-foreground rounded-tr-sm' 
+                  : 'bg-card border rounded-tl-sm text-foreground shadow-sm'
+              }`}>
+                <p className="text-sm leading-relaxed">{m.content}</p>
+              </div>
+            </div>
+          ))}
+          {chatMutation.isPending && (
+            <div className="flex justify-start">
+              <div className="bg-card border p-4 rounded-2xl rounded-tl-sm flex gap-1 items-center shadow-sm">
+                <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+              </div>
+            </div>
+          )}
+
+          {/* Outcome States */}
+          {eligible === true && (
+            <div className="mt-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center animate-in fade-in zoom-in duration-300">
+              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-emerald-900 mb-2">Preliminary Verification Successful</h3>
+              <p className="text-emerald-700 text-sm mb-6">
+                You appear to meet the criteria. Proceed to contact the coordinator for final verification and enrollment.
+              </p>
+              {whatsappUrl && (
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={buttonVariants({ className: "w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold" })}>
+                  Continue on WhatsApp <ArrowRight className="ml-2 w-4 h-4" />
+                </a>
+              )}
+            </div>
+          )}
+
+          {eligible === false && (
+            <div className="mt-6 bg-destructive/10 border border-destructive/20 rounded-2xl p-6 text-center animate-in fade-in zoom-in duration-300">
+              <div className="w-12 h-12 bg-destructive/20 text-destructive rounded-full flex items-center justify-center mx-auto mb-4">
+                <ShieldAlert className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-destructive mb-2">Eligibility Not Met</h3>
+              <p className="text-destructive/80 text-sm">
+                Based on your responses, you do not meet the criteria for Phase One membership at this time. Thank you for your interest in Greater Bayelsa.
+              </p>
+            </div>
+          )}
         </div>
-      </div>
 
-      <Card className="border-border/50 shadow-md">
-        <CardHeader className="bg-muted/30 border-b border-border/50">
-          <CardTitle className="text-lg">Voter Information</CardTitle>
-          <CardDescription>All fields marked with an asterisk (*) are required.</CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" /> Personal Details
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Tari" {...field} data-testid="input-firstname" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Ebi" {...field} data-testid="input-lastname" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="gender"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Gender *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-gender">
-                              <SelectValue placeholder="Select gender" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {GENDERS.map(g => (
-                              <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="dateOfBirth"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Date of Birth</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} data-testid="input-dob" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Phone Number</FormLabel>
-                        <FormControl>
-                          <Input type="tel" placeholder="080..." {...field} data-testid="input-phone" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="occupation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Occupation</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Teacher, Trader" {...field} data-testid="input-occupation" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="vin"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Voter Identification Number (VIN)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter 19-digit VIN if available" {...field} data-testid="input-vin" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" /> Location Details
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="lga"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>LGA *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-lga">
-                              <SelectValue placeholder="Select LGA" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {LGAS.map(lga => (
-                              <SelectItem key={lga} value={lga}>{lga}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="ward"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ward *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Ward 1" {...field} data-testid="input-ward" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pollingUnit"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Polling Unit *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. PU 001" {...field} data-testid="input-pu" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" /> Outreach Status
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="supportLevel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Support Level *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-support">
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {SUPPORT_LEVELS.map(level => (
-                              <SelectItem key={level.value} value={level.value}>{level.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="contactStatus"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Contact Status *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-contact">
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {CONTACT_STATUSES.map(status => (
-                              <SelectItem key={status.value} value={status.value}>{status.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Outreach Notes</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Add any relevant details from field officers..." 
-                            className="resize-none min-h-[100px]" 
-                            {...field} 
-                            data-testid="input-notes"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-4 pt-4 border-t border-border/50">
-                <Link href="/admin/voters" className={buttonVariants({ variant: "outline" })} data-testid="btn-cancel">
-                  Cancel
-                </Link>
-                <Button type="submit" disabled={createVoter.isPending} className="min-w-[150px]" data-testid="btn-submit">
-                  {createVoter.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
-                    </>
-                  ) : (
-                    "Save Voter Record"
-                  )}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+        <div className="p-4 bg-card border-t">
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <Input
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder={eligible !== null ? "Chat concluded." : "Type your message..."}
+              disabled={eligible !== null || chatMutation.isPending}
+              className="rounded-xl h-12 bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:bg-background"
+            />
+            <Button 
+              type="submit" 
+              size="icon" 
+              className="h-12 w-12 rounded-xl shrink-0 bg-primary hover:bg-primary/90 shadow-sm"
+              disabled={!input.trim() || eligible !== null || chatMutation.isPending}
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

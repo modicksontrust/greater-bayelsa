@@ -1,239 +1,224 @@
 import { Router, type IRouter } from "express";
-import { and, eq, desc, or, isNull, asc } from "drizzle-orm";
+import { and, eq, desc, inArray, isNull, or, type SQL } from "drizzle-orm";
 import {
   db,
   postsTable,
-  eventsTable,
+  communityUpdatesTable,
   notificationsTable,
-  membersTable,
-  type Post,
-  type EventRow,
-  type NotificationRow,
+  feedbackReportsTable,
+  usersTable,
+  villagesTable,
 } from "@workspace/db";
 import {
-  ListPostsQueryParams,
   ListPostsResponse,
   CreatePostBody,
   CreatePostResponse,
-  GetPostParams,
   GetPostResponse,
-  UpdatePostParams,
   UpdatePostBody,
   UpdatePostResponse,
-  DeletePostParams,
-  ListEventsResponse,
-  CreateEventBody,
-  CreateEventResponse,
-  DeleteEventParams,
+  ListUpdatesResponse,
+  CreateUpdateBody,
+  CreateUpdateResponse,
   ListNotificationsResponse,
-  SendNotificationBody,
-  SendNotificationResponse,
-  MarkNotificationReadParams,
   MarkNotificationReadResponse,
+  SendMessageBody,
+  SendMessageResponse,
+  ListFeedbackResponse,
+  SubmitFeedbackBody,
+  SubmitFeedbackResponse,
+  UpdateFeedbackBody,
+  UpdateFeedbackResponse,
 } from "@workspace/api-zod";
-import { requireMember, requireAdmin } from "../middlewares/auth";
+import {
+  requireUser,
+  requireHq,
+  requireRole,
+  isHq,
+  isCoordinator,
+} from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-const serializePost = (p: Post) => ({
-  ...p,
-  createdAt: p.createdAt.toISOString(),
-});
-const serializeEvent = (e: EventRow) => ({
-  ...e,
-  startsAt: e.startsAt.toISOString(),
-  createdAt: e.createdAt.toISOString(),
-});
-const serializeNotification = (n: NotificationRow) => ({
-  id: n.id,
-  title: n.title,
-  body: n.body,
-  broadcast: n.memberId === null,
-  read: n.read,
-  createdAt: n.createdAt.toISOString(),
-});
-
-// Posts (public read, admin write)
+// ---------- Public posts ----------
 router.get("/posts", async (req, res): Promise<void> => {
-  const parsed = ListPostsQueryParams.safeParse(req.query);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const { category } = parsed.data;
-  const posts = await db
+  const conds: SQL[] = [];
+  if (req.query.category)
+    conds.push(eq(postsTable.category, String(req.query.category)));
+  const rows = await db
     .select()
     .from(postsTable)
-    .where(category ? eq(postsTable.category, category) : undefined)
-    .orderBy(desc(postsTable.createdAt));
-  res.json(ListPostsResponse.parse(posts.map(serializePost)));
+    .where(conds.length ? and(...conds) : undefined)
+    .orderBy(desc(postsTable.createdAt))
+    .limit(100);
+  res.json(
+    ListPostsResponse.parse(
+      rows.map((p) => ({ ...p, createdAt: p.createdAt.toISOString() })),
+    ),
+  );
 });
 
-router.get("/posts/:id", async (req, res): Promise<void> => {
-  const parsed = GetPostParams.safeParse(req.params);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const [post] = await db
-    .select()
-    .from(postsTable)
-    .where(eq(postsTable.id, parsed.data.id))
-    .limit(1);
-  if (!post) {
-    res.status(404).json({ error: "Post not found" });
-    return;
-  }
-  res.json(GetPostResponse.parse(serializePost(post)));
-});
-
-router.post("/posts", requireAdmin, async (req, res): Promise<void> => {
+router.post("/posts", requireHq, async (req, res): Promise<void> => {
   const parsed = CreatePostBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
   const [created] = await db.insert(postsTable).values(parsed.data).returning();
-  res.status(201).json(CreatePostResponse.parse(serializePost(created)));
+  res.status(201).json(
+    CreatePostResponse.parse({
+      ...created,
+      createdAt: created.createdAt.toISOString(),
+    }),
+  );
 });
 
-router.patch("/posts/:id", requireAdmin, async (req, res): Promise<void> => {
-  const params = UpdatePostParams.safeParse(req.params);
-  const body = UpdatePostBody.safeParse(req.body);
-  if (!params.success || !body.success) {
-    res.status(400).json({
-      error: params.success ? body.error?.message : params.error.message,
-    });
+router.get("/posts/:id", async (req, res): Promise<void> => {
+  const [post] = await db
+    .select()
+    .from(postsTable)
+    .where(eq(postsTable.id, Number(req.params.id)))
+    .limit(1);
+  if (!post) {
+    res.status(404).json({ error: "Post not found" });
+    return;
+  }
+  res.json(
+    GetPostResponse.parse({ ...post, createdAt: post.createdAt.toISOString() }),
+  );
+});
+
+router.patch("/posts/:id", requireHq, async (req, res): Promise<void> => {
+  const parsed = UpdatePostBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
     return;
   }
   const [updated] = await db
     .update(postsTable)
-    .set(body.data)
-    .where(eq(postsTable.id, params.data.id))
+    .set(parsed.data)
+    .where(eq(postsTable.id, Number(req.params.id)))
     .returning();
   if (!updated) {
     res.status(404).json({ error: "Post not found" });
     return;
   }
-  res.json(UpdatePostResponse.parse(serializePost(updated)));
+  res.json(
+    UpdatePostResponse.parse({
+      ...updated,
+      createdAt: updated.createdAt.toISOString(),
+    }),
+  );
 });
 
-router.delete("/posts/:id", requireAdmin, async (req, res): Promise<void> => {
-  const parsed = DeletePostParams.safeParse(req.params);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
+router.delete("/posts/:id", requireHq, async (req, res): Promise<void> => {
   const deleted = await db
     .delete(postsTable)
-    .where(eq(postsTable.id, parsed.data.id))
+    .where(eq(postsTable.id, Number(req.params.id)))
     .returning();
   if (!deleted.length) {
     res.status(404).json({ error: "Post not found" });
     return;
   }
-  res.status(204).send();
+  res.status(204).end();
 });
 
-// Events (public read, admin write)
-router.get("/events", async (_req, res): Promise<void> => {
-  const events = await db
-    .select()
-    .from(eventsTable)
-    .orderBy(asc(eventsTable.startsAt));
-  res.json(ListEventsResponse.parse(events.map(serializeEvent)));
-});
-
-router.post("/events", requireAdmin, async (req, res): Promise<void> => {
-  const parsed = CreateEventBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const [created] = await db
-    .insert(eventsTable)
-    .values({ ...parsed.data, startsAt: new Date(parsed.data.startsAt) })
-    .returning();
-  res.status(201).json(CreateEventResponse.parse(serializeEvent(created)));
-});
-
-router.delete("/events/:id", requireAdmin, async (req, res): Promise<void> => {
-  const parsed = DeleteEventParams.safeParse(req.params);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const deleted = await db
-    .delete(eventsTable)
-    .where(eq(eventsTable.id, parsed.data.id))
-    .returning();
-  if (!deleted.length) {
-    res.status(404).json({ error: "Event not found" });
-    return;
-  }
-  res.status(204).send();
-});
-
-// Notifications
-router.get("/notifications", requireMember, async (req, res): Promise<void> => {
-  const notifications = await db
-    .select()
-    .from(notificationsTable)
-    .where(
+// ---------- Community updates (urgent first) ----------
+router.get("/updates", requireUser, async (req, res): Promise<void> => {
+  const user = req.user!;
+  const conds: SQL[] = [];
+  if (!isHq(user)) {
+    conds.push(
       or(
-        eq(notificationsTable.memberId, req.member!.id),
-        isNull(notificationsTable.memberId),
-      ),
-    )
-    .orderBy(desc(notificationsTable.createdAt));
+        isNull(communityUpdatesTable.villageId),
+        eq(communityUpdatesTable.villageId, user.villageId ?? -1),
+      )!,
+    );
+  }
+  const rows = await db
+    .select({
+      u: communityUpdatesTable,
+      villageName: villagesTable.name,
+      firstName: usersTable.firstName,
+      lastName: usersTable.lastName,
+    })
+    .from(communityUpdatesTable)
+    .leftJoin(villagesTable, eq(communityUpdatesTable.villageId, villagesTable.id))
+    .innerJoin(usersTable, eq(communityUpdatesTable.authorId, usersTable.id))
+    .where(conds.length ? and(...conds) : undefined)
+    .orderBy(desc(communityUpdatesTable.urgent), desc(communityUpdatesTable.createdAt))
+    .limit(200);
   res.json(
-    ListNotificationsResponse.parse(notifications.map(serializeNotification)),
+    ListUpdatesResponse.parse(
+      rows.map((r) => ({
+        ...r.u,
+        villageName: r.villageName,
+        authorName: `${r.firstName} ${r.lastName}`,
+        createdAt: r.u.createdAt.toISOString(),
+      })),
+    ),
   );
 });
 
-router.post("/notifications", requireAdmin, async (req, res): Promise<void> => {
-  const parsed = SendNotificationBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const { title, body, memberId } = parsed.data;
-  if (memberId != null) {
-    const [target] = await db
-      .select({ id: membersTable.id })
-      .from(membersTable)
-      .where(eq(membersTable.id, memberId))
-      .limit(1);
-    if (!target) {
-      res.status(400).json({ error: "Target member not found" });
-      return;
-    }
-  }
-  const [created] = await db
-    .insert(notificationsTable)
-    .values({ title, body, memberId: memberId ?? null })
-    .returning();
-  res
-    .status(201)
-    .json(SendNotificationResponse.parse(serializeNotification(created)));
-});
-
 router.post(
-  "/notifications/:id/read",
-  requireMember,
+  "/updates",
+  requireRole("unit_leader", "village_head", "secretary", "assistant", "founder"),
   async (req, res): Promise<void> => {
-    const parsed = MarkNotificationReadParams.safeParse(req.params);
+    const parsed = CreateUpdateBody.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: parsed.error.message });
       return;
     }
+    const caller = req.user!;
+    const villageId = isHq(caller)
+      ? (parsed.data.villageId ?? null)
+      : caller.villageId;
+    const [created] = await db
+      .insert(communityUpdatesTable)
+      .values({
+        villageId,
+        authorId: caller.id,
+        title: parsed.data.title,
+        body: parsed.data.body,
+        urgent: parsed.data.urgent ?? false,
+      })
+      .returning();
+    res.status(201).json(
+      CreateUpdateResponse.parse({
+        ...created,
+        villageName: null,
+        authorName: `${caller.firstName} ${caller.lastName}`,
+        createdAt: created.createdAt.toISOString(),
+      }),
+    );
+  },
+);
+
+// ---------- Notifications / messaging ----------
+router.get("/notifications", requireUser, async (req, res): Promise<void> => {
+  const rows = await db
+    .select()
+    .from(notificationsTable)
+    .where(eq(notificationsTable.userId, req.user!.id))
+    .orderBy(desc(notificationsTable.createdAt))
+    .limit(100);
+  res.json(
+    ListNotificationsResponse.parse(
+      rows.map((n) => ({ ...n, createdAt: n.createdAt.toISOString() })),
+    ),
+  );
+});
+
+router.post(
+  "/notifications/:id/read",
+  requireUser,
+  async (req, res): Promise<void> => {
     const [updated] = await db
       .update(notificationsTable)
       .set({ read: true })
       .where(
         and(
-          eq(notificationsTable.id, parsed.data.id),
-          eq(notificationsTable.memberId, req.member!.id),
+          eq(notificationsTable.id, Number(req.params.id)),
+          eq(notificationsTable.userId, req.user!.id),
         ),
       )
       .returning();
@@ -241,8 +226,122 @@ router.post(
       res.status(404).json({ error: "Notification not found" });
       return;
     }
-    res.json(MarkNotificationReadResponse.parse(serializeNotification(updated)));
+    res.json(
+      MarkNotificationReadResponse.parse({
+        ...updated,
+        createdAt: updated.createdAt.toISOString(),
+      }),
+    );
   },
 );
 
+router.post("/messages", requireHq, async (req, res): Promise<void> => {
+  const parsed = SendMessageBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const { title, body, userIds, villageId } = parsed.data;
+  const conds: SQL[] = [eq(usersTable.status, "active")];
+  if (userIds && userIds.length) conds.push(inArray(usersTable.id, userIds));
+  if (villageId != null) conds.push(eq(usersTable.villageId, villageId));
+  const recipients = await db
+    .select({ id: usersTable.id })
+    .from(usersTable)
+    .where(and(...conds));
+  if (recipients.length) {
+    await db.insert(notificationsTable).values(
+      recipients.map((r) => ({
+        userId: r.id,
+        title,
+        body,
+        kind: "broadcast",
+      })),
+    );
+  }
+  res.status(201).json(SendMessageResponse.parse({ notified: recipients.length }));
+});
+
+// ---------- Feedback (member -> HQ, bypasses local leadership) ----------
+router.get("/feedback", requireUser, async (req, res): Promise<void> => {
+  const user = req.user!;
+  const conds: SQL[] = [];
+  if (!isHq(user)) conds.push(eq(feedbackReportsTable.userId, user.id));
+  const rows = await db
+    .select({
+      f: feedbackReportsTable,
+      firstName: usersTable.firstName,
+      lastName: usersTable.lastName,
+      membershipCode: usersTable.membershipCode,
+      villageName: villagesTable.name,
+    })
+    .from(feedbackReportsTable)
+    .innerJoin(usersTable, eq(feedbackReportsTable.userId, usersTable.id))
+    .leftJoin(villagesTable, eq(usersTable.villageId, villagesTable.id))
+    .where(conds.length ? and(...conds) : undefined)
+    .orderBy(desc(feedbackReportsTable.createdAt))
+    .limit(200);
+  res.json(
+    ListFeedbackResponse.parse(
+      rows.map((r) => ({
+        ...r.f,
+        memberName: `${r.firstName} ${r.lastName}`,
+        membershipCode: r.membershipCode,
+        villageName: r.villageName,
+        createdAt: r.f.createdAt.toISOString(),
+      })),
+    ),
+  );
+});
+
+router.post("/feedback", requireUser, async (req, res): Promise<void> => {
+  const parsed = SubmitFeedbackBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const [created] = await db
+    .insert(feedbackReportsTable)
+    .values({
+      userId: req.user!.id,
+      category: parsed.data.category,
+      body: parsed.data.body,
+    })
+    .returning();
+  res.status(201).json(
+    SubmitFeedbackResponse.parse({
+      ...created,
+      createdAt: created.createdAt.toISOString(),
+    }),
+  );
+});
+
+router.patch("/feedback/:id", requireHq, async (req, res): Promise<void> => {
+  const parsed = UpdateFeedbackBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const [updated] = await db
+    .update(feedbackReportsTable)
+    .set({
+      status: parsed.data.status,
+      response: parsed.data.response ?? undefined,
+      respondedById: req.user!.id,
+    })
+    .where(eq(feedbackReportsTable.id, Number(req.params.id)))
+    .returning();
+  if (!updated) {
+    res.status(404).json({ error: "Report not found" });
+    return;
+  }
+  res.json(
+    UpdateFeedbackResponse.parse({
+      ...updated,
+      createdAt: updated.createdAt.toISOString(),
+    }),
+  );
+});
+
+void isCoordinator;
 export default router;
