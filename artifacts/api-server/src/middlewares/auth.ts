@@ -47,8 +47,14 @@ export function requireAuth(
 
 /**
  * Loads the platform user for the signed-in Clerk account.
- * Bootstrap: if no founder exists yet, the account whose primary email
- * matches FOUNDER_EMAIL becomes the founder (serialized with an advisory lock).
+ *
+ * Bootstrap logic:
+ *  1. If FOUNDER_EMAIL is set, only the account with that email may bootstrap.
+ *  2. If FOUNDER_EMAIL is not set, the first authenticated user to arrive
+ *     becomes the founder (suitable for initial setup / single-org deployments).
+ *
+ * Once a founder row exists, no further bootstrapping occurs — subsequent
+ * unknown accounts receive 403.
  */
 export async function requireUser(
   req: Request,
@@ -75,53 +81,68 @@ export async function requireUser(
     return;
   }
 
-  // Founder bootstrap: compare the signed-in user's primary email to FOUNDER_EMAIL
-  const founderEmail = process.env.FOUNDER_EMAIL?.trim().toLowerCase();
-  if (!founderEmail) {
-    res.status(503).json({
-      error: "FOUNDER_EMAIL is not configured. Contact your administrator.",
-    });
-    return;
-  }
-
-  // Fetch the Clerk user to get their primary email address
-  let clerkUser: Awaited<ReturnType<typeof clerkClient.users.getUser>>;
-  try {
-    clerkUser = await clerkClient.users.getUser(userId);
-  } catch {
-    res.status(503).json({ error: "Could not verify account email." });
-    return;
-  }
-
-  const primaryEmail = clerkUser.emailAddresses
-    .find((e) => e.id === clerkUser.primaryEmailAddressId)
-    ?.emailAddress?.toLowerCase();
-
-  if (primaryEmail !== founderEmail) {
-    res.status(403).json({
-      error:
-        "No member profile for this account. Contact the platform administrator to be enrolled.",
-    });
-    return;
-  }
-
-  // Email matches — bootstrap as founder if none exists yet
+  // Unknown account — attempt founder bootstrap inside an advisory lock
   const bootstrapped = await db.transaction(async (tx) => {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(${FOUNDER_BOOTSTRAP_LOCK})`);
+
+    // If a founder already exists, no further bootstrapping is allowed
     const [existing] = await tx
       .select({ id: usersTable.id })
       .from(usersTable)
       .where(eq(usersTable.role, "founder"))
       .limit(1);
     if (existing) return null;
+
+    // If FOUNDER_EMAIL is configured, enforce the email check
+    const founderEmail = process.env.FOUNDER_EMAIL?.trim().toLowerCase();
+    if (founderEmail) {
+      let clerkUser: Awaited<ReturnType<typeof clerkClient.users.getUser>>;
+      try {
+        clerkUser = await clerkClient.users.getUser(userId);
+      } catch {
+        return "clerk_error" as const;
+      }
+      const primaryEmail = clerkUser.emailAddresses
+        .find((e) => e.id === clerkUser.primaryEmailAddressId)
+        ?.emailAddress?.toLowerCase();
+      if (primaryEmail !== founderEmail) return "wrong_email" as const;
+
+      const [created] = await tx
+        .insert(usersTable)
+        .values({
+          clerkUserId: userId,
+          membershipCode: "GB-0001",
+          role: "founder",
+          firstName: clerkUser.firstName || "Founder",
+          lastName: clerkUser.lastName || "Account",
+          phone: "",
+          vin: "FOUNDER",
+          vettingStatus: "vetted",
+          joinDate: new Date().toISOString().slice(0, 10),
+        })
+        .returning();
+      return created;
+    }
+
+    // No FOUNDER_EMAIL set — first authenticated user becomes founder
+    let firstName = "Founder";
+    let lastName = "Account";
+    try {
+      const clerkUser = await clerkClient.users.getUser(userId);
+      firstName = clerkUser.firstName || firstName;
+      lastName = clerkUser.lastName || lastName;
+    } catch {
+      // Non-fatal — proceed with placeholder name
+    }
+
     const [created] = await tx
       .insert(usersTable)
       .values({
         clerkUserId: userId,
         membershipCode: "GB-0001",
         role: "founder",
-        firstName: clerkUser.firstName || "Founder",
-        lastName: clerkUser.lastName || "Account",
+        firstName,
+        lastName,
         phone: "",
         vin: "FOUNDER",
         vettingStatus: "vetted",
@@ -131,14 +152,26 @@ export async function requireUser(
     return created;
   });
 
-  if (bootstrapped) {
-    req.user = bootstrapped;
-    next();
+  if (bootstrapped === "clerk_error") {
+    res.status(503).json({ error: "Could not verify account email. Try again." });
+    return;
+  }
+  if (bootstrapped === "wrong_email") {
+    res.status(403).json({
+      error: "No member profile for this account. Contact the platform administrator to be enrolled.",
+    });
+    return;
+  }
+  if (!bootstrapped) {
+    // Founder exists but this account isn't enrolled
+    res.status(403).json({
+      error: "No member profile for this account. Contact the platform administrator to be enrolled.",
+    });
     return;
   }
 
-  // Founder row already exists but isn't linked to this Clerk ID
-  res.status(403).json({ error: "No member profile for this account." });
+  req.user = bootstrapped;
+  next();
 }
 
 export function requireRole(...roles: string[]) {
