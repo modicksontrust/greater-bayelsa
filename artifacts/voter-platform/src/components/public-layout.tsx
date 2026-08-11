@@ -39,8 +39,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             </h1>
           </Link>
 
-          {/* Desktop Nav — hidden below md */}
-          <nav className="hidden md:flex items-center gap-5 lg:gap-7">
+          {/* Desktop Nav — hidden below lg */}
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-7">
             {navItems.map((item) => {
               const isActive =
                 location === item.path ||
@@ -61,8 +61,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             })}
           </nav>
 
-          {/* Desktop CTA — hidden below md */}
-          <div className="hidden md:flex items-center gap-2 shrink-0">
+          {/* Desktop CTA — hidden below lg */}
+          <div className="hidden lg:flex items-center gap-2 shrink-0">
             <Show when="signed-out">
               <Link
                 href="/sign-in"
@@ -95,8 +95,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             </Show>
           </div>
 
-          {/* Mobile: compact CTA + hamburger */}
-          <div className="flex md:hidden items-center gap-1.5 shrink-0">
+          {/* Compact CTA + hamburger — shown below lg */}
+          <div className="flex lg:hidden items-center gap-1.5 shrink-0">
             <Show when="signed-in">
               <Link
                 href="/dashboard"
