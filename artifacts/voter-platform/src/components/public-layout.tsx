@@ -61,8 +61,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             })}
           </nav>
 
-          {/* Desktop CTA — hidden below lg */}
-          <div className="hidden lg:flex items-center gap-2 shrink-0">
+          {/* CTAs — always visible */}
+          <div className="flex items-center gap-2 shrink-0">
             <Show when="signed-out">
               <Link
                 href="/sign-in"
@@ -93,33 +93,9 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 <Shield className="h-3.5 w-3.5 mr-1.5" /> Portal
               </Link>
             </Show>
-          </div>
 
-          {/* Compact CTA + hamburger — shown below lg */}
-          <div className="flex lg:hidden items-center gap-1.5 shrink-0">
-            <Show when="signed-in">
-              <Link
-                href="/dashboard"
-                className={buttonVariants({
-                  size: "sm",
-                  className: "font-bold text-xs px-3",
-                })}
-              >
-                <Shield className="h-3.5 w-3.5 mr-1.5" /> Portal
-              </Link>
-            </Show>
-            <Show when="signed-out">
-              <Link
-                href="/register"
-                className={buttonVariants({
-                  size: "sm",
-                  className: "font-bold text-xs px-3 hidden xs:flex",
-                })}
-              >
-                Join
-              </Link>
-            </Show>
-
+            {/* Hamburger — hidden on lg+ where full nav is shown */}
+            <div className="lg:hidden">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 <Button
@@ -234,6 +210,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 </div>
               </SheetContent>
             </Sheet>
+            </div>
           </div>
         </div>
       </header>
