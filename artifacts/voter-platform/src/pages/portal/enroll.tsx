@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, CheckCircle2, Search, XCircle, FileUp, Loader2 } from "lucide-react";
+import { Camera, CheckCircle2, Search, XCircle, FileUp, Loader2, Plus, Trash2 } from "lucide-react";
 import { useLocation } from "wouter";
 
 export function Enroll() {
@@ -16,8 +16,8 @@ export function Enroll() {
 
   const { data: villages } = useListVillages({ query: { queryKey: ["/api/villages"] } });
   const [villageId, setVillageId] = useState<string>("");
-  const { data: units } = useListVillageUnits(parseInt(villageId || "0", 10), { 
-    query: { queryKey: ["/api/villages", villageId, "units"] } 
+  const { data: units } = useListVillageUnits(parseInt(villageId || "0", 10), {
+    query: { queryKey: ["/api/villages", villageId, "units"] }
   });
 
   const [vinQuery, setVinQuery] = useState("");
@@ -30,6 +30,8 @@ export function Enroll() {
     firstName: "",
     lastName: "",
     phone: "",
+    phone2: "",
+    phone3: "",
     vin: "",
     dateOfBirth: "",
     gender: "",
@@ -45,8 +47,14 @@ export function Enroll() {
     nextOfKinPhone: "",
     bio: "",
     photoUrl: "",
-    cvUrl: ""
+    cvUrl: "",
+    bankName: "",
+    bankAccountName: "",
+    bankAccountNumber: "",
   });
+
+  // Track how many extra phone fields are shown (0 = just primary, 1 = +phone2, 2 = +phone2+phone3)
+  const [extraPhones, setExtraPhones] = useState(0);
 
   const enrollMutation = useEnrollMember({
     mutation: {
@@ -81,32 +89,36 @@ export function Enroll() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.photoUrl) {
       toast({ title: "Photo required", description: "A profile photo is mandatory for enrollment.", variant: "destructive" });
       return;
     }
-    
+
     if (!formData.bio && !formData.cvUrl) {
       toast({ title: "Bio or CV required", description: "You must provide either a biography or upload a CV.", variant: "destructive" });
       return;
     }
 
-    const payload = {
+    const payload: any = {
       ...formData,
       villageId: parseInt(villageId, 10),
-      unitId: parseInt(formData.unitId, 10)
+      unitId: parseInt(formData.unitId, 10),
+      phone2: formData.phone2 || null,
+      phone3: formData.phone3 || null,
+      bankName: formData.bankName || null,
+      bankAccountName: formData.bankAccountName || null,
+      bankAccountNumber: formData.bankAccountNumber || null,
     };
 
     enrollMutation.mutate({ data: payload });
   };
 
-  // Basic client-side age check
   const isAdult = useMemo(() => {
     if (!formData.dateOfBirth) return null;
     const dob = new Date(formData.dateOfBirth);
     const ageDiffMs = Date.now() - dob.getTime();
-    const ageDate = new Date(ageDiffMs); 
+    const ageDate = new Date(ageDiffMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970) >= 18;
   }, [formData.dateOfBirth]);
 
@@ -117,26 +129,26 @@ export function Enroll() {
         <p className="text-muted-foreground font-medium">Verify credentials and register a new member into the leadership pipeline.</p>
       </div>
 
+      {/* Step 1: Voter Roll */}
       <div className="bg-card rounded-3xl border shadow-sm p-8 mb-8 border-primary/20 bg-primary/5">
         <Label className="text-sm font-bold uppercase tracking-wider text-primary mb-3 block">Step 1: Voter Roll Verification</Label>
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input 
+          <Input
             value={vinQuery}
             onChange={e => setVinQuery(e.target.value)}
             placeholder="Search Voter Roll by VIN or Phone..."
             className="pl-10 h-12 bg-white border-primary/20"
           />
         </div>
-        
         {vinQuery.length >= 3 && (
           <div className="bg-white rounded-xl border shadow-sm max-h-64 overflow-y-auto p-2">
             {vinLoading ? (
               <div className="p-4 text-center text-muted-foreground"><Loader2 className="w-5 h-5 animate-spin mx-auto" /></div>
             ) : vinMatches?.length ? (
               vinMatches.map(voter => (
-                <div 
-                  key={voter.id} 
+                <div
+                  key={voter.id}
                   onClick={() => handleSelectVoter(voter)}
                   className="p-3 hover:bg-muted/50 rounded-lg cursor-pointer flex justify-between items-center group transition-colors"
                 >
@@ -158,9 +170,10 @@ export function Enroll() {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-card rounded-3xl border shadow-sm overflow-hidden">
+
+        {/* Step 2: Identity */}
         <div className="p-8 border-b bg-muted/20">
           <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6 block">Step 2: Identity & Assignment</Label>
-          
           <div className="flex flex-col md:flex-row gap-8 items-start">
             <div className="shrink-0">
               <Label className="block mb-3 font-bold">Profile Photo <span className="text-destructive">*</span></Label>
@@ -186,9 +199,7 @@ export function Enroll() {
                   }}
                   onComplete={(result) => {
                     const objectPath = (result.successful?.[0]?.meta as any)?.objectPath;
-                    if (objectPath) {
-                      setFormData(prev => ({ ...prev, photoUrl: objectPath }));
-                    }
+                    if (objectPath) setFormData(prev => ({ ...prev, photoUrl: objectPath }));
                   }}
                   buttonClassName="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 >
@@ -219,7 +230,9 @@ export function Enroll() {
           </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-8 space-y-8">
+
+          {/* Assignment + Login */}
           <div className="grid md:grid-cols-2 gap-x-8 gap-y-6">
             <div className="space-y-2">
               <Label>Village Assignment <span className="text-destructive">*</span></Label>
@@ -232,32 +245,106 @@ export function Enroll() {
             </div>
             <div className="space-y-2">
               <Label>Unit Assignment <span className="text-destructive">*</span></Label>
-              <Select value={formData.unitId} onValueChange={v => setFormData(p => ({...p, unitId: v}))} disabled={!villageId} required>
+              <Select value={formData.unitId} onValueChange={v => setFormData(p => ({ ...p, unitId: v }))} disabled={!villageId} required>
                 <SelectTrigger className="h-12 bg-muted/50 font-semibold"><SelectValue placeholder="Select Unit" /></SelectTrigger>
                 <SelectContent>
                   {units?.map(u => <SelectItem key={u.id} value={u.id.toString()}>{u.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="space-y-2">
-              <Label>Phone Number <span className="text-destructive">*</span></Label>
-              <Input name="phone" value={formData.phone} onChange={handleChange} required className="h-12 bg-muted/50" />
-            </div>
             <div className="space-y-2">
               <Label>Login Password <span className="text-destructive">*</span></Label>
               <Input type="password" name="password" value={formData.password} onChange={handleChange} required minLength={8} className="h-12 bg-muted/50" placeholder="Minimum 8 characters" />
             </div>
+          </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label>Coordinator Biography <span className="text-muted-foreground font-normal text-xs">(Required if no CV)</span></Label>
-              <Textarea 
-                name="bio" 
-                value={formData.bio} 
-                onChange={handleChange as any} 
-                placeholder="Write a brief evaluation of the member's background and suitability for the leadership pipeline..."
-                className="min-h-[100px] bg-muted/50 resize-y mb-4" 
-              />
+          {/* Personal Details */}
+          <div>
+            <h3 className="text-base font-bold font-serif mb-4 border-t pt-6">Personal Details</h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label>Occupation</Label>
+                <Input name="occupation" value={formData.occupation} onChange={handleChange} className="h-12 bg-muted/50" placeholder="e.g. Farmer, Teacher, Trader..." />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Residential Address</Label>
+                <Input name="address" value={formData.address} onChange={handleChange} className="h-12 bg-muted/50" placeholder="Street, community..." />
+              </div>
+            </div>
+          </div>
+
+          {/* Phone Numbers */}
+          <div>
+            <h3 className="text-base font-bold font-serif mb-4 border-t pt-6">Phone Numbers</h3>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label>Primary Phone <span className="text-destructive">*</span></Label>
+                <Input name="phone" value={formData.phone} onChange={handleChange} required className="h-12 bg-muted/50" placeholder="+234..." />
+              </div>
+              {extraPhones >= 1 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Second Phone</Label>
+                    <button type="button" onClick={() => { setExtraPhones(1); setFormData(p => ({ ...p, phone2: "", phone3: "" })); }} className="text-xs text-muted-foreground hover:text-destructive font-bold flex items-center gap-1">
+                      <Trash2 className="w-3 h-3" /> Remove
+                    </button>
+                  </div>
+                  <Input name="phone2" value={formData.phone2} onChange={handleChange} className="h-12 bg-muted/50" placeholder="+234..." />
+                </div>
+              )}
+              {extraPhones >= 2 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Third Phone</Label>
+                    <button type="button" onClick={() => { setExtraPhones(1); setFormData(p => ({ ...p, phone3: "" })); }} className="text-xs text-muted-foreground hover:text-destructive font-bold flex items-center gap-1">
+                      <Trash2 className="w-3 h-3" /> Remove
+                    </button>
+                  </div>
+                  <Input name="phone3" value={formData.phone3} onChange={handleChange} className="h-12 bg-muted/50" placeholder="+234..." />
+                </div>
+              )}
+              {extraPhones < 2 && (
+                <button type="button" onClick={() => setExtraPhones(n => n + 1)} className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors mt-1">
+                  <Plus className="w-4 h-4" /> Add another phone number
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Bank Details */}
+          <div>
+            <h3 className="text-base font-bold font-serif mb-1 border-t pt-6">Bank Account Details</h3>
+            <p className="text-sm text-muted-foreground mb-4">Used by the organisation for payouts. All fields optional but recommended.</p>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2 md:col-span-2">
+                <Label>Bank Name</Label>
+                <Input name="bankName" value={formData.bankName} onChange={handleChange} className="h-12 bg-muted/50" placeholder="e.g. First Bank, GTBank, Access Bank..." />
+              </div>
+              <div className="space-y-2">
+                <Label>Account Name</Label>
+                <Input name="bankAccountName" value={formData.bankAccountName} onChange={handleChange} className="h-12 bg-muted/50" placeholder="Name on the account" />
+              </div>
+              <div className="space-y-2">
+                <Label>Account Number</Label>
+                <Input name="bankAccountNumber" value={formData.bankAccountNumber} onChange={handleChange} className="h-12 bg-muted/50 font-mono" placeholder="10-digit account number" maxLength={10} />
+              </div>
+            </div>
+          </div>
+
+          {/* Bio / CV */}
+          <div>
+            <h3 className="text-base font-bold font-serif mb-4 border-t pt-6">Biography & CV</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Coordinator Biography <span className="text-muted-foreground font-normal text-xs">(Required if no CV)</span></Label>
+                <Textarea
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleChange as any}
+                  placeholder="Write a brief evaluation of the member's background and suitability for the leadership pipeline..."
+                  className="min-h-[100px] bg-muted/50 resize-y"
+                />
+              </div>
               <div className="flex items-center gap-4 border p-4 rounded-xl bg-background">
                 <div className="flex-1">
                   <p className="font-bold text-sm">Upload CV</p>
@@ -291,9 +378,9 @@ export function Enroll() {
         </div>
 
         <div className="p-8 border-t bg-muted/10 flex justify-end">
-          <Button 
-            type="submit" 
-            size="lg" 
+          <Button
+            type="submit"
+            size="lg"
             className="h-12 px-8 font-bold shadow-sm"
             disabled={enrollMutation.isPending || (isAdult === false)}
           >

@@ -14,6 +14,10 @@ export interface MemberUpdate {
   unitId?: number;
   phone?: string;
   /** @nullable */
+  phone2?: string | null;
+  /** @nullable */
+  phone3?: string | null;
+  /** @nullable */
   whatsapp?: string | null;
   /** @nullable */
   email?: string | null;
@@ -36,4 +40,10 @@ export interface MemberUpdate {
   /** @nullable */
   credentials?: string | null;
   vettingStatus?: string;
+  /** @nullable */
+  bankName?: string | null;
+  /** @nullable */
+  bankAccountName?: string | null;
+  /** @nullable */
+  bankAccountNumber?: string | null;
 }

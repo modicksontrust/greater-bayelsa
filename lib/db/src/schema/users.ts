@@ -28,6 +28,8 @@ export const usersTable = pgTable("users", {
   gender: text("gender"),
   dateOfBirth: date("date_of_birth", { mode: "string" }),
   phone: text("phone").notNull(),
+  phone2: text("phone2"),
+  phone3: text("phone3"),
   whatsapp: text("whatsapp"),
   email: text("email"),
   photoUrl: text("photo_url"),
@@ -42,6 +44,11 @@ export const usersTable = pgTable("users", {
   nextOfKinPhone: text("next_of_kin_phone"),
   cvUrl: text("cv_url"),
   bio: text("bio"), // coordinator-written when no CV; also public leader bio
+
+  // Bank details (for organisation payouts)
+  bankName: text("bank_name"),
+  bankAccountName: text("bank_account_name"),
+  bankAccountNumber: text("bank_account_number"),
 
   // Leadership credentials (shown publicly for leaders)
   credentials: text("credentials"), // trainings completed etc.

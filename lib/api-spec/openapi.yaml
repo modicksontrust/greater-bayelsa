@@ -1222,6 +1222,8 @@ components:
       type: object
       properties:
         phone: { type: string }
+        phone2: { type: [string, "null"] }
+        phone3: { type: [string, "null"] }
         whatsapp: { type: [string, "null"] }
         email: { type: [string, "null"] }
         photoUrl: { type: [string, "null"] }
@@ -1231,6 +1233,9 @@ components:
         nextOfKinName: { type: [string, "null"] }
         nextOfKinPhone: { type: [string, "null"] }
         cvUrl: { type: [string, "null"] }
+        bankName: { type: [string, "null"] }
+        bankAccountName: { type: [string, "null"] }
+        bankAccountNumber: { type: [string, "null"] }
 
     MemberEnrollment:
       type: object
@@ -1252,6 +1257,8 @@ components:
         firstName: { type: string, minLength: 1 }
         lastName: { type: string, minLength: 1 }
         phone: { type: string, minLength: 7 }
+        phone2: { type: [string, "null"] }
+        phone3: { type: [string, "null"] }
         vin: { type: string, minLength: 3 }
         photoUrl: { type: string, minLength: 1 }
         dateOfBirth: { type: string }
@@ -1269,6 +1276,9 @@ components:
         nextOfKinPhone: { type: [string, "null"] }
         cvUrl: { type: [string, "null"] }
         bio: { type: [string, "null"] }
+        bankName: { type: [string, "null"] }
+        bankAccountName: { type: [string, "null"] }
+        bankAccountNumber: { type: [string, "null"] }
 
     MemberUpdate:
       type: object
@@ -1279,6 +1289,8 @@ components:
         villageId: { type: integer }
         unitId: { type: integer }
         phone: { type: string }
+        phone2: { type: [string, "null"] }
+        phone3: { type: [string, "null"] }
         whatsapp: { type: [string, "null"] }
         email: { type: [string, "null"] }
         photoUrl: { type: [string, "null"] }
@@ -1291,6 +1303,9 @@ components:
         bio: { type: [string, "null"] }
         credentials: { type: [string, "null"] }
         vettingStatus: { type: string }
+        bankName: { type: [string, "null"] }
+        bankAccountName: { type: [string, "null"] }
+        bankAccountNumber: { type: [string, "null"] }
 
     OverviewStats:
       type: object

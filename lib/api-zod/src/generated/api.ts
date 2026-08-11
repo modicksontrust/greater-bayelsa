@@ -181,6 +181,8 @@ export const GetMeResponse = zod.object({
  */
 export const UpdateMeBody = zod.object({
   "phone": zod.string().optional(),
+  "phone2": zod.string().nullish(),
+  "phone3": zod.string().nullish(),
   "whatsapp": zod.string().nullish(),
   "email": zod.string().nullish(),
   "photoUrl": zod.string().nullish(),
@@ -189,7 +191,10 @@ export const UpdateMeBody = zod.object({
   "maritalStatus": zod.string().nullish(),
   "nextOfKinName": zod.string().nullish(),
   "nextOfKinPhone": zod.string().nullish(),
-  "cvUrl": zod.string().nullish()
+  "cvUrl": zod.string().nullish(),
+  "bankName": zod.string().nullish(),
+  "bankAccountName": zod.string().nullish(),
+  "bankAccountNumber": zod.string().nullish()
 })
 
 export const UpdateMeResponse = zod.object({
@@ -302,6 +307,8 @@ export const EnrollMemberBody = zod.object({
   "firstName": zod.string().min(1),
   "lastName": zod.string().min(1),
   "phone": zod.string().min(enrollMemberBodyPhoneMin),
+  "phone2": zod.string().nullish(),
+  "phone3": zod.string().nullish(),
   "vin": zod.string().min(enrollMemberBodyVinMin),
   "photoUrl": zod.string().min(1),
   "dateOfBirth": zod.string(),
@@ -318,7 +325,10 @@ export const EnrollMemberBody = zod.object({
   "nextOfKinName": zod.string().nullish(),
   "nextOfKinPhone": zod.string().nullish(),
   "cvUrl": zod.string().nullish(),
-  "bio": zod.string().nullish()
+  "bio": zod.string().nullish(),
+  "bankName": zod.string().nullish(),
+  "bankAccountName": zod.string().nullish(),
+  "bankAccountNumber": zod.string().nullish()
 })
 
 export const EnrollMemberResponse = zod.object({
@@ -449,6 +459,8 @@ export const UpdateMemberBody = zod.object({
   "villageId": zod.int().optional(),
   "unitId": zod.int().optional(),
   "phone": zod.string().optional(),
+  "phone2": zod.string().nullish(),
+  "phone3": zod.string().nullish(),
   "whatsapp": zod.string().nullish(),
   "email": zod.string().nullish(),
   "photoUrl": zod.string().nullish(),
@@ -460,7 +472,10 @@ export const UpdateMemberBody = zod.object({
   "cvUrl": zod.string().nullish(),
   "bio": zod.string().nullish(),
   "credentials": zod.string().nullish(),
-  "vettingStatus": zod.string().optional()
+  "vettingStatus": zod.string().optional(),
+  "bankName": zod.string().nullish(),
+  "bankAccountName": zod.string().nullish(),
+  "bankAccountNumber": zod.string().nullish()
 })
 
 export const UpdateMemberResponse = zod.object({

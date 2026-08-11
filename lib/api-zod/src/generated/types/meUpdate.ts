@@ -9,6 +9,10 @@
 export interface MeUpdate {
   phone?: string;
   /** @nullable */
+  phone2?: string | null;
+  /** @nullable */
+  phone3?: string | null;
+  /** @nullable */
   whatsapp?: string | null;
   /** @nullable */
   email?: string | null;
@@ -26,4 +30,10 @@ export interface MeUpdate {
   nextOfKinPhone?: string | null;
   /** @nullable */
   cvUrl?: string | null;
+  /** @nullable */
+  bankName?: string | null;
+  /** @nullable */
+  bankAccountName?: string | null;
+  /** @nullable */
+  bankAccountNumber?: string | null;
 }

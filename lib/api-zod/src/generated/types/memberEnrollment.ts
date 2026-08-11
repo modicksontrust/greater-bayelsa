@@ -14,6 +14,10 @@ export interface MemberEnrollment {
   lastName: string;
   /** @minLength 7 */
   phone: string;
+  /** @nullable */
+  phone2?: string | null;
+  /** @nullable */
+  phone3?: string | null;
   /** @minLength 3 */
   vin: string;
   /** @minLength 1 */
@@ -43,4 +47,10 @@ export interface MemberEnrollment {
   cvUrl?: string | null;
   /** @nullable */
   bio?: string | null;
+  /** @nullable */
+  bankName?: string | null;
+  /** @nullable */
+  bankAccountName?: string | null;
+  /** @nullable */
+  bankAccountNumber?: string | null;
 }

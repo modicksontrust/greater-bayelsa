@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Camera, CheckCircle2, ShieldCheck, Mail, Phone, MapPin, Briefcase, FileText, GraduationCap } from "lucide-react";
+import { Camera, CheckCircle2, ShieldCheck, MapPin, Briefcase, GraduationCap, Plus, Trash2, Landmark } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -14,7 +14,7 @@ export function Profile() {
   const { data: member, isLoading } = useGetMe({
     query: { queryKey: ["/api/me"] }
   });
-  
+
   const updateMe = useUpdateMe({
     mutation: {
       onSuccess: () => {
@@ -28,6 +28,8 @@ export function Profile() {
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
+    phone2: "",
+    phone3: "",
     whatsapp: "",
     occupation: "",
     address: "",
@@ -35,16 +37,26 @@ export function Profile() {
     nextOfKinName: "",
     nextOfKinPhone: "",
     cvUrl: "",
-    photoUrl: ""
+    photoUrl: "",
+    bankName: "",
+    bankAccountName: "",
+    bankAccountNumber: "",
   });
+
+  // Track how many extra phone fields are visible
+  const [extraPhones, setExtraPhones] = useState(0);
 
   const isInitialized = useRef(false);
 
   useEffect(() => {
     if (member && !isInitialized.current) {
+      const p2 = (member as any).phone2 || "";
+      const p3 = (member as any).phone3 || "";
       setFormData({
         email: member.email || "",
         phone: member.phone || "",
+        phone2: p2,
+        phone3: p3,
         whatsapp: member.whatsapp || "",
         occupation: member.occupation || "",
         address: member.address || "",
@@ -52,8 +64,12 @@ export function Profile() {
         nextOfKinName: member.nextOfKinName || "",
         nextOfKinPhone: member.nextOfKinPhone || "",
         cvUrl: member.cvUrl || "",
-        photoUrl: member.photoUrl || ""
+        photoUrl: member.photoUrl || "",
+        bankName: (member as any).bankName || "",
+        bankAccountName: (member as any).bankAccountName || "",
+        bankAccountNumber: (member as any).bankAccountNumber || "",
       });
+      setExtraPhones(p3 ? 2 : p2 ? 1 : 0);
       isInitialized.current = true;
     }
   }, [member]);
@@ -71,47 +87,46 @@ export function Profile() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateMe.mutate({ data: formData });
+    updateMe.mutate({
+      data: {
+        ...formData,
+        phone2: formData.phone2 || null,
+        phone3: formData.phone3 || null,
+        bankName: formData.bankName || null,
+        bankAccountName: formData.bankAccountName || null,
+        bankAccountNumber: formData.bankAccountNumber || null,
+      } as any
+    });
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in-stagger">
+      {/* Profile header card */}
       <div className="bg-card rounded-3xl border shadow-sm overflow-hidden">
         <div className="h-32 bg-primary/5 border-b relative">
           <div className="absolute -bottom-12 left-8">
             <div className="relative group">
               {formData.photoUrl ? (
-                <img 
-                  src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/storage${formData.photoUrl}`} 
-                  alt="Profile" 
-                  className="w-24 h-24 rounded-2xl object-cover border-4 border-card shadow-sm bg-muted" 
+                <img
+                  src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/storage${formData.photoUrl}`}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-2xl object-cover border-4 border-card shadow-sm bg-muted"
                 />
               ) : (
                 <div className="w-24 h-24 rounded-2xl border-4 border-card shadow-sm bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary">
                   {member.firstName[0]}{member.lastName[0]}
                 </div>
               )}
-              
               <ObjectUploader
                 onGetUploadParameters={async (file) => {
                   const res = await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/storage/uploads/request-url`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      name: file.name,
-                      size: file.size,
-                      contentType: file.type || 'application/octet-stream',
-                      purpose: 'profile_photo',
-                    }),
+                    body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type || 'application/octet-stream', purpose: 'profile_photo' }),
                   });
                   if (!res.ok) throw new Error("Failed to get URL");
                   const data = await res.json();
-                  return {
-                    method: 'PUT' as const,
-                    url: data.uploadURL,
-                    headers: { 'Content-Type': file.type || 'application/octet-stream' },
-                    objectPath: data.objectPath,
-                  };
+                  return { method: 'PUT' as const, url: data.uploadURL, headers: { 'Content-Type': file.type || 'application/octet-stream' }, objectPath: data.objectPath };
                 }}
                 onComplete={(result) => {
                   const objectPath = (result.successful?.[0]?.meta as any)?.objectPath;
@@ -134,14 +149,14 @@ export function Profile() {
             </span>
           </div>
         </div>
-        
+
         <div className="pt-16 pb-8 px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-bold font-serif mb-1">{member.firstName} {member.lastName}</h1>
               <p className="text-muted-foreground font-medium flex items-center gap-2">
                 <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
-                  {member.role.replace('_', ' ')}
+                  {member.role.replace(/_/g, ' ')}
                 </span>
                 • {member.villageName || 'HQ'}
                 {member.unitName && ` • ${member.unitName}`}
@@ -152,7 +167,7 @@ export function Profile() {
               <p className="font-mono text-lg font-bold bg-muted px-3 py-1 rounded-lg border">{member.membershipCode}</p>
             </div>
           </div>
-          
+
           <div className="flex flex-wrap gap-6 border-t pt-6 text-sm">
             <div className="flex items-center text-muted-foreground">
               <MapPin className="w-4 h-4 mr-2" />
@@ -170,47 +185,111 @@ export function Profile() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-card rounded-3xl border shadow-sm p-8">
-        <h2 className="text-xl font-bold font-serif mb-6 flex items-center gap-2">
-          Personal Information
-        </h2>
-        
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} className="h-12 bg-muted/50" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="whatsapp">WhatsApp Number</Label>
-            <Input id="whatsapp" name="whatsapp" value={formData.whatsapp} onChange={handleChange} className="h-12 bg-muted/50" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} className="h-12 bg-muted/50" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="occupation">Occupation</Label>
-            <Input id="occupation" name="occupation" value={formData.occupation} onChange={handleChange} className="h-12 bg-muted/50" />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="address">Residential Address</Label>
-            <Input id="address" name="address" value={formData.address} onChange={handleChange} className="h-12 bg-muted/50" />
+      <form onSubmit={handleSubmit} className="bg-card rounded-3xl border shadow-sm p-8 space-y-8">
+
+        {/* Contact info */}
+        <div>
+          <h2 className="text-xl font-bold font-serif mb-6">Personal Information</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} className="h-12 bg-muted/50" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="occupation">Occupation</Label>
+              <Input id="occupation" name="occupation" value={formData.occupation} onChange={handleChange} className="h-12 bg-muted/50" />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="address">Residential Address</Label>
+              <Input id="address" name="address" value={formData.address} onChange={handleChange} className="h-12 bg-muted/50" />
+            </div>
           </div>
         </div>
 
-        <h2 className="text-xl font-bold font-serif mb-6 border-t pt-8">Next of Kin</h2>
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div className="space-y-2">
-            <Label htmlFor="nextOfKinName">Full Name</Label>
-            <Input id="nextOfKinName" name="nextOfKinName" value={formData.nextOfKinName} onChange={handleChange} className="h-12 bg-muted/50" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="nextOfKinPhone">Phone Number</Label>
-            <Input id="nextOfKinPhone" name="nextOfKinPhone" value={formData.nextOfKinPhone} onChange={handleChange} className="h-12 bg-muted/50" />
+        {/* Phone numbers */}
+        <div className="border-t pt-8">
+          <h2 className="text-xl font-bold font-serif mb-6">Phone Numbers</h2>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone">Primary Phone</Label>
+              <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} className="h-12 bg-muted/50" placeholder="+234..." />
+            </div>
+
+            {extraPhones >= 1 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="phone2">Second Phone</Label>
+                  <button type="button" onClick={() => { setExtraPhones(1); setFormData(p => ({ ...p, phone2: "", phone3: "" })); }} className="text-xs text-muted-foreground hover:text-destructive font-bold flex items-center gap-1">
+                    <Trash2 className="w-3 h-3" /> Remove
+                  </button>
+                </div>
+                <Input id="phone2" name="phone2" value={formData.phone2} onChange={handleChange} className="h-12 bg-muted/50" placeholder="+234..." />
+              </div>
+            )}
+
+            {extraPhones >= 2 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="phone3">Third Phone</Label>
+                  <button type="button" onClick={() => { setExtraPhones(1); setFormData(p => ({ ...p, phone3: "" })); }} className="text-xs text-muted-foreground hover:text-destructive font-bold flex items-center gap-1">
+                    <Trash2 className="w-3 h-3" /> Remove
+                  </button>
+                </div>
+                <Input id="phone3" name="phone3" value={formData.phone3} onChange={handleChange} className="h-12 bg-muted/50" placeholder="+234..." />
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp">WhatsApp Number</Label>
+              <Input id="whatsapp" name="whatsapp" value={formData.whatsapp} onChange={handleChange} className="h-12 bg-muted/50" placeholder="If different from primary" />
+            </div>
+
+            {extraPhones < 2 && (
+              <button type="button" onClick={() => setExtraPhones(n => n + 1)} className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors">
+                <Plus className="w-4 h-4" /> Add another phone number
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="pt-6 border-t flex justify-end">
+        {/* Bank details */}
+        <div className="border-t pt-8">
+          <h2 className="text-xl font-bold font-serif mb-2 flex items-center gap-2">
+            <Landmark className="w-5 h-5 text-primary" /> Bank Account Details
+          </h2>
+          <p className="text-sm text-muted-foreground mb-6">Used by the organisation for payouts. Keep this up to date.</p>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="bankName">Bank Name</Label>
+              <Input id="bankName" name="bankName" value={formData.bankName} onChange={handleChange} className="h-12 bg-muted/50" placeholder="e.g. First Bank, GTBank, Access Bank..." />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bankAccountName">Account Name</Label>
+              <Input id="bankAccountName" name="bankAccountName" value={formData.bankAccountName} onChange={handleChange} className="h-12 bg-muted/50" placeholder="Name on the account" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bankAccountNumber">Account Number</Label>
+              <Input id="bankAccountNumber" name="bankAccountNumber" value={formData.bankAccountNumber} onChange={handleChange} className="h-12 bg-muted/50 font-mono" placeholder="10-digit account number" maxLength={10} />
+            </div>
+          </div>
+        </div>
+
+        {/* Next of kin */}
+        <div className="border-t pt-8">
+          <h2 className="text-xl font-bold font-serif mb-6">Next of Kin</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="nextOfKinName">Full Name</Label>
+              <Input id="nextOfKinName" name="nextOfKinName" value={formData.nextOfKinName} onChange={handleChange} className="h-12 bg-muted/50" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="nextOfKinPhone">Phone Number</Label>
+              <Input id="nextOfKinPhone" name="nextOfKinPhone" value={formData.nextOfKinPhone} onChange={handleChange} className="h-12 bg-muted/50" />
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t flex justify-end">
           <Button type="submit" disabled={updateMe.isPending} className="font-bold h-12 px-8 shadow-sm">
             {updateMe.isPending ? "Saving..." : "Save Changes"}
           </Button>

@@ -193,6 +193,10 @@ export interface Member {
 export interface MeUpdate {
   phone?: string;
   /** @nullable */
+  phone2?: string | null;
+  /** @nullable */
+  phone3?: string | null;
+  /** @nullable */
   whatsapp?: string | null;
   /** @nullable */
   email?: string | null;
@@ -210,6 +214,12 @@ export interface MeUpdate {
   nextOfKinPhone?: string | null;
   /** @nullable */
   cvUrl?: string | null;
+  /** @nullable */
+  bankName?: string | null;
+  /** @nullable */
+  bankAccountName?: string | null;
+  /** @nullable */
+  bankAccountNumber?: string | null;
 }
 
 export type MemberEnrollmentMembershipCategory = typeof MemberEnrollmentMembershipCategory[keyof typeof MemberEnrollmentMembershipCategory];
@@ -227,6 +237,10 @@ export interface MemberEnrollment {
   lastName: string;
   /** @minLength 7 */
   phone: string;
+  /** @nullable */
+  phone2?: string | null;
+  /** @nullable */
+  phone3?: string | null;
   /** @minLength 3 */
   vin: string;
   /** @minLength 1 */
@@ -256,6 +270,12 @@ export interface MemberEnrollment {
   cvUrl?: string | null;
   /** @nullable */
   bio?: string | null;
+  /** @nullable */
+  bankName?: string | null;
+  /** @nullable */
+  bankAccountName?: string | null;
+  /** @nullable */
+  bankAccountNumber?: string | null;
 }
 
 export interface MemberUpdate {
@@ -265,6 +285,10 @@ export interface MemberUpdate {
   villageId?: number;
   unitId?: number;
   phone?: string;
+  /** @nullable */
+  phone2?: string | null;
+  /** @nullable */
+  phone3?: string | null;
   /** @nullable */
   whatsapp?: string | null;
   /** @nullable */
@@ -288,6 +312,12 @@ export interface MemberUpdate {
   /** @nullable */
   credentials?: string | null;
   vettingStatus?: string;
+  /** @nullable */
+  bankName?: string | null;
+  /** @nullable */
+  bankAccountName?: string | null;
+  /** @nullable */
+  bankAccountNumber?: string | null;
 }
 
 export type OverviewStatsVillagesItemUnitsItem = {
