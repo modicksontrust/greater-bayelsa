@@ -1,31 +1,58 @@
 import { Link } from "wouter";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
-  ArrowRight, CheckCircle2, Users, Shield, BookOpen,
-  LayoutDashboard, UserCircle, CreditCard, GraduationCap,
-  CalendarDays, Bell, MessageSquare, UserPlus, Newspaper,
-  ClipboardList, Database, Send, FileText, CheckSquare,
+  ArrowRight, Users, Shield, BookOpen,
+  Crown, UserCog, TreePine, Layers, UserCheck,
 } from "lucide-react";
 import { useListPosts } from "@workspace/api-client-react";
 import { PublicLayout } from "@/components/public-layout";
 
-const PORTAL_LINKS = [
-  { name: "Dashboard",       path: "/dashboard",        icon: LayoutDashboard, color: "text-primary",    bg: "bg-primary/8",   desc: "Your home base"          },
-  { name: "My Profile",      path: "/profile",          icon: UserCircle,      color: "text-blue-600",   bg: "bg-blue-50",     desc: "Personal details"        },
-  { name: "Dues & Status",   path: "/dues",             icon: CreditCard,      color: "text-emerald-600",bg: "bg-emerald-50",  desc: "Payments & standing"     },
-  { name: "Training",        path: "/training",         icon: GraduationCap,   color: "text-violet-600", bg: "bg-violet-50",   desc: "Civic curriculum"        },
-  { name: "Meetings",        path: "/meetings",         icon: Users,           color: "text-indigo-600", bg: "bg-indigo-50",   desc: "Sessions & minutes"      },
-  { name: "Calendar",        path: "/calendar",         icon: CalendarDays,    color: "text-amber-600",  bg: "bg-amber-50",    desc: "Events & schedule"       },
-  { name: "Updates",         path: "/updates",          icon: Bell,            color: "text-rose-600",   bg: "bg-rose-50",     desc: "Community notices"       },
-  { name: "Feedback",        path: "/feedback",         icon: MessageSquare,   color: "text-sky-600",    bg: "bg-sky-50",      desc: "Submit reports"          },
-  { name: "Notifications",   path: "/notifications",    icon: ClipboardList,   color: "text-slate-600",  bg: "bg-slate-50",    desc: "Alerts & messages"       },
-  { name: "Member Directory",path: "/members",          icon: Users,           color: "text-teal-600",   bg: "bg-teal-50",     desc: "Leaders view"            },
-  { name: "Enroll Member",   path: "/enroll",           icon: UserPlus,        color: "text-cyan-600",   bg: "bg-cyan-50",     desc: "Coordinators only"       },
-  { name: "News & Impact",   path: "/news",             icon: Newspaper,       color: "text-lime-700",   bg: "bg-lime-50",     desc: "Public updates"          },
-  { name: "HQ Requests",     path: "/admin/requests",   icon: CheckSquare,     color: "text-orange-600", bg: "bg-orange-50",   desc: "HQ admin"                },
-  { name: "Voter Roll",      path: "/admin/voters",     icon: Database,        color: "text-cyan-700",   bg: "bg-cyan-50",     desc: "HQ admin"                },
-  { name: "Manage Content",  path: "/admin/content",    icon: FileText,        color: "text-green-700",  bg: "bg-green-50",    desc: "HQ admin"                },
-  { name: "Bulk Messaging",  path: "/admin/messaging",  icon: Send,            color: "text-pink-600",   bg: "bg-pink-50",     desc: "HQ admin"                },
+const ROLE_DASHBOARDS = [
+  {
+    role: "Super Admin",
+    icon: Crown,
+    accent: "from-yellow-500 to-amber-600",
+    badge: "bg-amber-100 text-amber-800",
+    border: "border-amber-200 hover:border-amber-400",
+    desc: "Full platform control — voter roll, content, messaging, member management, and all HQ operations.",
+    access: ["Voter Roll", "Member Directory", "Content Management", "Bulk Messaging", "HQ Requests", "All Reports"],
+  },
+  {
+    role: "My Assistant",
+    icon: UserCog,
+    accent: "from-violet-500 to-purple-600",
+    badge: "bg-violet-100 text-violet-800",
+    border: "border-violet-200 hover:border-violet-400",
+    desc: "Delegated HQ authority — manage enrollments, handle requests, and coordinate across villages.",
+    access: ["Enroll Members", "HQ Requests", "Member Directory", "Meetings", "Updates", "Reports"],
+  },
+  {
+    role: "Village Head",
+    icon: TreePine,
+    accent: "from-emerald-500 to-green-600",
+    badge: "bg-emerald-100 text-emerald-800",
+    border: "border-emerald-200 hover:border-emerald-400",
+    desc: "Lead and oversee all unit heads and members within your village. Coordinate meetings and track progress.",
+    access: ["Village Members", "Enroll Member", "Meetings", "Training", "Calendar", "Feedback"],
+  },
+  {
+    role: "Unit Head",
+    icon: Layers,
+    accent: "from-blue-500 to-indigo-600",
+    badge: "bg-blue-100 text-blue-800",
+    border: "border-blue-200 hover:border-blue-400",
+    desc: "Manage your unit's members, attendance, and dues. First point of contact for grassroots accountability.",
+    access: ["Unit Members", "Enroll Member", "Meetings", "Attendance", "Dues Tracking", "Notifications"],
+  },
+  {
+    role: "Member",
+    icon: UserCheck,
+    accent: "from-slate-500 to-gray-600",
+    badge: "bg-slate-100 text-slate-700",
+    border: "border-slate-200 hover:border-slate-400",
+    desc: "Track your civic progress, pay dues, attend meetings, and participate in the leadership pipeline.",
+    access: ["My Profile", "Dues & Status", "Training", "Meetings", "Calendar", "Updates"],
+  },
 ];
 
 export function Home() {
@@ -102,27 +129,47 @@ export function Home() {
         </div>
       </section>
 
-      {/* Portal Quick Access */}
+      {/* Role-Based Portal Login */}
       <section className="py-20 bg-muted/40 border-t">
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold font-serif mb-3">Member Portal</h2>
-            <p className="text-muted-foreground text-lg">Jump directly to any section of the platform. Sign in to access member-only areas.</p>
+            <h2 className="text-3xl md:text-4xl font-bold font-serif mb-3">Sign In to Your Dashboard</h2>
+            <p className="text-muted-foreground text-lg">Find your role below and sign in to access your dashboard.</p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {PORTAL_LINKS.map((item) => (
-              <Link key={item.path} href={item.path}>
-                <div className="group bg-card border rounded-2xl p-4 flex items-center gap-3 hover:border-primary/40 hover:shadow-md transition-all cursor-pointer h-full">
-                  <div className={`${item.bg} ${item.color} rounded-xl p-2.5 shrink-0`}>
-                    <item.icon className="h-5 w-5" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
+            {ROLE_DASHBOARDS.map((r) => (
+              <div key={r.role} className={`bg-card border-2 ${r.border} rounded-2xl overflow-hidden flex flex-col transition-all hover:shadow-lg`}>
+                {/* colour bar */}
+                <div className={`h-1.5 w-full bg-gradient-to-r ${r.accent}`} />
+                <div className="p-6 flex flex-col flex-1">
+                  {/* header */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`rounded-xl p-2.5 bg-gradient-to-br ${r.accent}`}>
+                      <r.icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${r.badge}`}>
+                        {r.role}
+                      </span>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-foreground leading-tight">{item.name}</p>
-                    <p className="text-[11px] text-muted-foreground font-medium mt-0.5 truncate">{item.desc}</p>
-                  </div>
-                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground ml-auto shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {/* description */}
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">{r.desc}</p>
+                  {/* access list */}
+                  <ul className="space-y-1 mb-6">
+                    {r.access.map((item) => (
+                      <li key={item} className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                        <span className={`w-1.5 h-1.5 rounded-full bg-gradient-to-br ${r.accent} shrink-0`} />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  {/* CTA */}
+                  <Link href="/sign-in" className={buttonVariants({ className: `w-full font-bold bg-gradient-to-r ${r.accent} text-white border-0 hover:opacity-90` })}>
+                    Sign In as {r.role} <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
