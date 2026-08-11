@@ -374,6 +374,29 @@ export const EnrollMemberResponse = zod.object({
 
 
 /**
+ * @summary Upcoming member birthdays within the caller's scope (leaders)
+ */
+export const listMemberBirthdaysQueryDaysDefault = 30;
+
+export const ListMemberBirthdaysQueryParams = zod.object({
+  "days": zod.coerce.number().int().default(listMemberBirthdaysQueryDaysDefault)
+})
+
+export const ListMemberBirthdaysResponseItem = zod.object({
+  "id": zod.int(),
+  "firstName": zod.string(),
+  "lastName": zod.string(),
+  "dateOfBirth": zod.string(),
+  "photoUrl": zod.string().nullish(),
+  "membershipCode": zod.string(),
+  "villageName": zod.string().nullish(),
+  "unitName": zod.string().nullish(),
+  "daysUntil": zod.int()
+})
+export const ListMemberBirthdaysResponse = zod.array(ListMemberBirthdaysResponseItem)
+
+
+/**
  * @summary Match a voter-roll record by VIN or phone (coordinators)
  */
 export const matchVoterQueryQMin = 3;

@@ -7,6 +7,7 @@
  */
 
 export * from './attendanceRecord';
+export * from './birthdayMember';
 export * from './bulkDuesBody';
 export * from './bulkDuesResult';
 export * from './checkinBody';
@@ -34,6 +35,7 @@ export * from './hqRequestUpdate';
 export * from './hqRequestUpdateStatus';
 export * from './listHqRequestsParams';
 export * from './listMeetingsParams';
+export * from './listMemberBirthdaysParams';
 export * from './listMembersParams';
 export * from './listPostsParams';
 export * from './listVotersParams';

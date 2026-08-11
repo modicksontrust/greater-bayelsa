@@ -225,7 +225,18 @@ export function Enroll() {
               <div className="space-y-2">
                 <Label>Date of Birth <span className="text-destructive">*</span></Label>
                 <Input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required className="h-12 bg-muted/50" />
-                {isAdult === false && <p className="text-xs text-destructive font-bold mt-1">Must be 18 or older.</p>}
+                {formData.dateOfBirth && (() => {
+                  const dob = new Date(formData.dateOfBirth);
+                  let age = new Date().getFullYear() - dob.getFullYear();
+                  const m = new Date().getMonth() - dob.getMonth();
+                  if (m < 0 || (m === 0 && new Date().getDate() < dob.getDate())) age--;
+                  return age >= 0 ? (
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold mt-1 ${age >= 18 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-destructive/10 text-destructive border border-destructive/20'}`}>
+                      <span>Age: {age} years old</span>
+                      {age < 18 && <span className="text-xs font-bold">— Must be 18+</span>}
+                    </div>
+                  ) : null;
+                })()}
               </div>
             </div>
           </div>
@@ -284,6 +295,10 @@ export function Enroll() {
                     <SelectItem value="widowed">Widowed</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Email Address</Label>
+                <Input type="email" name="email" value={formData.email} onChange={handleChange} className="h-12 bg-muted/50" placeholder="member@example.com" />
               </div>
               <div className="space-y-2">
                 <Label>Occupation</Label>

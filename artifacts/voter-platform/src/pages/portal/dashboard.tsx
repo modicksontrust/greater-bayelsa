@@ -1,8 +1,8 @@
-import { useGetMe, useGetOverviewStats, useListUpdates, useListEvents } from "@workspace/api-client-react";
+import { useGetMe, useGetOverviewStats, useListUpdates, useListEvents, useListMemberBirthdays } from "@workspace/api-client-react";
 import {
   Users, AlertCircle, FileText, Bell, CheckCircle2, Activity, Calendar,
   UserCircle, ShieldCheck, GraduationCap, MessageSquare, ClipboardList,
-  UserPlus, CheckSquare, Database, Send, ChevronRight,
+  UserPlus, CheckSquare, Database, Send, ChevronRight, Cake,
 } from "lucide-react";
 import { Link } from "wouter";
 import { format } from "date-fns";
@@ -48,6 +48,11 @@ export function Dashboard() {
   const { data: events, isLoading: eventsLoading } = useListEvents({
     query: { queryKey: ["/api/events"] }
   });
+
+  const { data: birthdays, isLoading: birthdaysLoading } = useListMemberBirthdays(
+    { days: 30 },
+    { query: { enabled: true, queryKey: ["/api/members/birthdays"] } }
+  );
 
   if (memberLoading || !member) {
     return (
@@ -203,6 +208,67 @@ export function Dashboard() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Upcoming Birthdays — leaders only */}
+      {isLeader && (
+        <div className="bg-card rounded-3xl border shadow-sm overflow-hidden">
+          <div className="px-8 py-5 border-b bg-muted/20 flex items-center justify-between">
+            <h2 className="text-xl font-bold font-serif flex items-center gap-2">
+              <Cake className="w-5 h-5 text-pink-500" /> Upcoming Birthdays
+              <span className="ml-2 text-xs font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full uppercase tracking-wider">Next 30 days</span>
+            </h2>
+          </div>
+          {birthdaysLoading ? (
+            <div className="p-8 space-y-3">
+              {[1,2,3].map(i => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
+            </div>
+          ) : !birthdays?.length ? (
+            <div className="p-12 text-center text-muted-foreground">
+              <Cake className="h-8 w-8 mx-auto mb-3 opacity-20" />
+              <p className="font-medium text-sm">No birthdays in the next 30 days.</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {birthdays.map(b => {
+                const dob = new Date(b.dateOfBirth);
+                const isToday = b.daysUntil === 0;
+                const isSoon  = b.daysUntil <= 3;
+                return (
+                  <div key={b.id} className={`px-8 py-4 flex items-center gap-4 ${isToday ? 'bg-pink-50/60' : ''}`}>
+                    {b.photoUrl ? (
+                      <img
+                        src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/storage${b.photoUrl}`}
+                        className="w-10 h-10 rounded-xl object-cover border shrink-0"
+                        alt=""
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                        {b.firstName[0]}{b.lastName[0]}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm truncate">
+                        {b.firstName} {b.lastName}
+                        {isToday && <span className="ml-2 text-pink-600">🎂 Today!</span>}
+                      </p>
+                      <p className="text-xs text-muted-foreground font-medium">
+                        {b.villageName || 'HQ'}{b.unitName ? ` · ${b.unitName}` : ''} • {format(dob, 'MMMM d')}
+                      </p>
+                    </div>
+                    <div className={`text-xs font-bold px-2.5 py-1 rounded-full shrink-0 ${
+                      isToday ? 'bg-pink-100 text-pink-700' :
+                      isSoon  ? 'bg-amber-50 text-amber-700' :
+                                'bg-muted text-muted-foreground'
+                    }`}>
+                      {isToday ? 'Today' : `${b.daysUntil}d`}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

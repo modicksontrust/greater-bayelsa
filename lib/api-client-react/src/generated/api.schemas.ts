@@ -282,6 +282,21 @@ export interface MemberEnrollment {
   bankAccountNumber?: string | null;
 }
 
+export interface BirthdayMember {
+  id: number;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  /** @nullable */
+  photoUrl?: string | null;
+  membershipCode: string;
+  /** @nullable */
+  villageName?: string | null;
+  /** @nullable */
+  unitName?: string | null;
+  daysUntil: number;
+}
+
 export interface MemberUpdate {
   role?: string;
   status?: string;
@@ -852,6 +867,10 @@ villageId?: number;
 unitId?: number;
 role?: string;
 status?: string;
+};
+
+export type ListMemberBirthdaysParams = {
+days?: number;
 };
 
 export type MatchVoterParams = {

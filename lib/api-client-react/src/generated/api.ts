@@ -21,6 +21,7 @@ import type {
 
 import type {
   AttendanceRecord,
+  BirthdayMember,
   BulkDuesBody,
   BulkDuesResult,
   CheckinBody,
@@ -42,6 +43,7 @@ import type {
   HqRequestUpdate,
   ListHqRequestsParams,
   ListMeetingsParams,
+  ListMemberBirthdaysParams,
   ListMembersParams,
   ListPostsParams,
   ListVotersParams,
@@ -865,6 +867,90 @@ export const useEnrollMember = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getEnrollMemberMutationOptions(options));
     }
+
+export const getListMemberBirthdaysUrl = (params?: ListMemberBirthdaysParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/members/birthdays?${stringifiedParams}` : `/api/members/birthdays`
+}
+
+/**
+ * @summary Upcoming member birthdays within the caller's scope (leaders)
+ */
+export const listMemberBirthdays = async (params?: ListMemberBirthdaysParams, options?: Parameters<typeof customFetch>[1]): Promise<BirthdayMember[]> => {
+
+  return customFetch<BirthdayMember[]>(getListMemberBirthdaysUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMemberBirthdaysQueryKey = (params?: ListMemberBirthdaysParams,) => {
+    return [
+    `/api/members/birthdays`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListMemberBirthdaysQueryOptions = <TData = Awaited<ReturnType<typeof listMemberBirthdays>>, TError = ErrorType<unknown>>(params?: ListMemberBirthdaysParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMemberBirthdays>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMemberBirthdaysQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMemberBirthdays>>> = ({ signal }) => listMemberBirthdays(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMemberBirthdays>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMemberBirthdaysQueryResult = NonNullable<Awaited<ReturnType<typeof listMemberBirthdays>>>
+export type ListMemberBirthdaysQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Upcoming member birthdays within the caller's scope (leaders)
+ */
+
+export function useListMemberBirthdays<TData = Awaited<ReturnType<typeof listMemberBirthdays>>, TError = ErrorType<unknown>>(
+ params?: ListMemberBirthdaysParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMemberBirthdays>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMemberBirthdaysQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getMatchVoterUrl = (params: MatchVoterParams,) => {
   const normalizedParams = new URLSearchParams();

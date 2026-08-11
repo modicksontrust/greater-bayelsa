@@ -171,6 +171,71 @@ router.get("/members", requireUser, async (req, res): Promise<void> => {
   );
 });
 
+router.get("/members/birthdays", requireUser, async (req, res): Promise<void> => {
+  const days = Math.min(Math.max(Number(req.query.days ?? 30), 1), 90);
+  const scope = scopeCondition(req.user!);
+
+  const members = await db
+    .select({
+      id: usersTable.id,
+      firstName: usersTable.firstName,
+      lastName: usersTable.lastName,
+      dateOfBirth: usersTable.dateOfBirth,
+      photoUrl: usersTable.photoUrl,
+      membershipCode: usersTable.membershipCode,
+      villageId: usersTable.villageId,
+      unitId: usersTable.unitId,
+    })
+    .from(usersTable)
+    .where(
+      and(
+        scope,
+        sql`${usersTable.dateOfBirth} IS NOT NULL`,
+        eq(usersTable.status, "active"),
+      ),
+    );
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const withDays = members
+    .map((m) => {
+      const dob = new Date(m.dateOfBirth!);
+      let bday = new Date(today.getFullYear(), dob.getMonth(), dob.getDate());
+      if (bday < today) bday = new Date(today.getFullYear() + 1, dob.getMonth(), dob.getDate());
+      const daysUntil = Math.round((bday.getTime() - today.getTime()) / 86_400_000);
+      return { ...m, daysUntil };
+    })
+    .filter((m) => m.daysUntil <= days)
+    .sort((a, b) => a.daysUntil - b.daysUntil)
+    .slice(0, 20);
+
+  // Fetch village/unit names in one shot
+  const { villagesTable, unitsTable } = await import("@workspace/db");
+  const villageIds = [...new Set(withDays.map((m) => m.villageId).filter(Boolean))] as number[];
+  const unitIds    = [...new Set(withDays.map((m) => m.unitId).filter(Boolean))]    as number[];
+  const [vRows, uRows] = await Promise.all([
+    villageIds.length ? db.select({ id: villagesTable.id, name: villagesTable.name }).from(villagesTable).where(inArray(villagesTable.id, villageIds)) : [],
+    unitIds.length    ? db.select({ id: unitsTable.id,   name: unitsTable.name   }).from(unitsTable).where(inArray(unitsTable.id,    unitIds))    : [],
+  ]);
+  const vMap = Object.fromEntries(vRows.map((v) => [v.id, v.name]));
+  const uMap = Object.fromEntries(uRows.map((u) => [u.id, u.name]));
+
+  res.json(
+    withDays.map((m) => ({
+      id:             m.id,
+      firstName:      m.firstName,
+      lastName:       m.lastName,
+      dateOfBirth:    m.dateOfBirth,
+      photoUrl:       m.photoUrl ?? null,
+      membershipCode: m.membershipCode,
+      villageName:    m.villageId ? (vMap[m.villageId] ?? null) : null,
+      unitName:       m.unitId    ? (uMap[m.unitId]    ?? null) : null,
+      daysUntil:      m.daysUntil,
+    })),
+  );
+});
+
 router.get("/members/match", requireCoordinator, async (req, res): Promise<void> => {
   const q = String(req.query.q ?? "").trim();
   if (q.length < 3) {

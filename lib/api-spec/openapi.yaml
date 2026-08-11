@@ -231,6 +231,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /members/birthdays:
+    get:
+      operationId: listMemberBirthdays
+      tags: [members]
+      summary: Upcoming member birthdays within the caller's scope (leaders)
+      parameters:
+        - name: days
+          in: query
+          schema: { type: integer, default: 30 }
+      responses:
+        "200":
+          description: Members with upcoming birthdays
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BirthdayMember"
+
   /members/match:
     get:
       operationId: matchVoter
@@ -1281,6 +1300,20 @@ components:
         bankName: { type: [string, "null"] }
         bankAccountName: { type: [string, "null"] }
         bankAccountNumber: { type: [string, "null"] }
+
+    BirthdayMember:
+      type: object
+      required: [id, firstName, lastName, dateOfBirth, membershipCode, daysUntil]
+      properties:
+        id: { type: integer }
+        firstName: { type: string }
+        lastName: { type: string }
+        dateOfBirth: { type: string }
+        photoUrl: { type: [string, "null"] }
+        membershipCode: { type: string }
+        villageName: { type: [string, "null"] }
+        unitName: { type: [string, "null"] }
+        daysUntil: { type: integer }
 
     MemberUpdate:
       type: object
