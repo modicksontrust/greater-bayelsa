@@ -1,6 +1,6 @@
 import { useState, ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, LogIn, Shield, Users, X } from "lucide-react";
+import { Menu, LogIn, Shield, Users, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Show, useClerk } from "@clerk/react";
@@ -27,17 +27,37 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/90 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6 gap-4">
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 min-w-0 group shrink-0">
-            <img
-              src={`${import.meta.env.BASE_URL}logo.svg`}
-              alt="Greater Bayelsa"
-              className="h-9 w-9 object-contain shrink-0 rounded-sm ring-2 ring-white"
-            />
-            <h1 className="text-base md:text-lg font-bold font-serif tracking-tight text-foreground group-hover:text-primary transition-colors leading-none truncate">
-              Greater Bayelsa
-            </h1>
-          </Link>
+          {/* Logo + Back/Forward */}
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg"
+              onClick={() => window.history.back()}
+              title="Go back"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg"
+              onClick={() => window.history.forward()}
+              title="Go forward"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Link href="/" className="flex items-center gap-2 min-w-0 group">
+              <img
+                src={`${import.meta.env.BASE_URL}logo.svg`}
+                alt="Greater Bayelsa"
+                className="h-9 w-9 object-contain shrink-0 rounded-sm ring-2 ring-white"
+              />
+              <h1 className="text-base md:text-lg font-bold font-serif tracking-tight text-foreground group-hover:text-primary transition-colors leading-none truncate">
+                Greater Bayelsa
+              </h1>
+            </Link>
+          </div>
 
           {/* Desktop Nav — hidden below lg */}
           <nav className="hidden lg:flex items-center gap-5 xl:gap-7">

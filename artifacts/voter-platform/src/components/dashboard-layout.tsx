@@ -3,7 +3,8 @@ import { Link, useLocation } from "wouter";
 import { 
   LayoutDashboard, Users, UserPlus, Menu, UserCircle, 
   Briefcase, Bell, Settings, FileText, Database, Send, LogOut, ChevronRight,
-  ClipboardList, ShieldCheck, MapPin, CheckSquare, MessageSquare, Calendar, Building, GraduationCap
+  ClipboardList, ShieldCheck, MapPin, CheckSquare, MessageSquare, Calendar, Building, GraduationCap,
+  ChevronLeft,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -186,6 +187,27 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-muted/30">
           <div className="mx-auto max-w-6xl">
+            {/* Back / Forward nav */}
+            <div className="flex items-center gap-1 mb-4">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 rounded-lg"
+                onClick={() => window.history.back()}
+                title="Go back"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 rounded-lg"
+                onClick={() => window.history.forward()}
+                title="Go forward"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
             {children}
           </div>
         </main>
