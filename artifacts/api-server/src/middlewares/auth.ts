@@ -85,36 +85,14 @@ export async function requireUser(
   const bootstrapped = await db.transaction(async (tx) => {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(${FOUNDER_BOOTSTRAP_LOCK})`);
 
-    // Check if a founder already exists
+    // Check if a founder already exists — if so, deny any unknown account
     const [existing] = await tx
-      .select()
+      .select({ id: usersTable.id })
       .from(usersTable)
       .where(eq(usersTable.role, "founder"))
       .limit(1);
 
-    // If the founder row has placeholder names it was auto-bootstrapped with the
-    // wrong Clerk account. Re-claim it for whoever is signing in now.
-    if (existing) {
-      const isPlaceholder =
-        existing.firstName === "Founder" && existing.lastName === "Account";
-      if (!isPlaceholder) return null; // Real founder exists — deny
-
-      // Fetch real name from Clerk (non-fatal if it fails)
-      let firstName = "Founder";
-      let lastName = "Account";
-      try {
-        const clerkUser = await clerkClient.users.getUser(userId);
-        firstName = clerkUser.firstName || firstName;
-        lastName = clerkUser.lastName || lastName;
-      } catch { /* proceed with placeholders */ }
-
-      const [updated] = await tx
-        .update(usersTable)
-        .set({ clerkUserId: userId, firstName, lastName })
-        .where(eq(usersTable.id, existing.id))
-        .returning();
-      return updated;
-    }
+    if (existing) return null; // Founder row exists; this account is not enrolled — deny
 
     // If FOUNDER_EMAIL is configured, enforce the email check
     const founderEmail = process.env.FOUNDER_EMAIL?.trim().toLowerCase();
