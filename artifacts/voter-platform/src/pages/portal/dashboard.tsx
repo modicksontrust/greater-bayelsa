@@ -1,12 +1,122 @@
-import { useGetMe, useGetOverviewStats, useListUpdates, useListEvents, useListMemberBirthdays } from "@workspace/api-client-react";
+import { useGetMe, useGetOverviewStats, useListUpdates, useListEvents, useListMemberBirthdays, useGetMyDues } from "@workspace/api-client-react";
 import {
   Users, AlertCircle, FileText, Bell, CheckCircle2, Activity, Calendar,
   UserCircle, ShieldCheck, GraduationCap, MessageSquare, ClipboardList,
-  UserPlus, CheckSquare, Database, Send, ChevronRight, Cake,
+  UserPlus, CheckSquare, Database, Send, ChevronRight, Cake, Award,
+  Lock, Download, Star, Upload, CreditCard, UserCheck,
 } from "lucide-react";
 import { Link } from "wouter";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRef, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { toPng } from "html-to-image";
+
+const PIPELINE_STAGES = [
+  { key: "enrolled",  label: "Enrolled",              icon: UserCheck,  color: "bg-blue-500"    },
+  { key: "vetted",    label: "Vetted",                icon: ShieldCheck,color: "bg-indigo-500"  },
+  { key: "dues",      label: "Dues Paid",             icon: CreditCard, color: "bg-violet-500"  },
+  { key: "pledge",    label: "Pledge Submitted",      icon: Upload,     color: "bg-amber-500"   },
+  { key: "confirmed", label: "VH Confirmed",          icon: Star,       color: "bg-orange-500"  },
+  { key: "inducted",  label: "Full Member",           icon: Award,      color: "bg-emerald-500" },
+];
+
+function getPipelineIdx(member: any, duesPaid: boolean) {
+  if (member.inductionStatus === "inducted") return 5;
+  if (member.inductionStatus === "pledge_submitted") return 3;
+  if (duesPaid) return 2;
+  if (member.vettingStatus === "vetted") return 1;
+  return 0;
+}
+
+// Digital ID card component
+function MemberIdCard({ member }: { member: any }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+  const downloadCard = useCallback(async () => {
+    if (!cardRef.current) return;
+    try {
+      const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 2 });
+      const link = document.createElement("a");
+      link.download = `GB-ID-${member.membershipCode}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (e) {
+      console.error("ID card download failed", e);
+    }
+  }, [member]);
+
+  return (
+    <div className="space-y-4">
+      {/* The printable card */}
+      <div
+        ref={cardRef}
+        className="relative w-full max-w-sm mx-auto rounded-2xl overflow-hidden shadow-xl"
+        style={{ background: "linear-gradient(135deg, #1a4731 0%, #2d7a50 50%, #1a4731 100%)", fontFamily: "system-ui, sans-serif" }}
+      >
+        {/* Header band */}
+        <div className="px-6 pt-5 pb-3 flex items-center gap-3 border-b border-white/15">
+          <img src={`${baseUrl}/logo.svg`} alt="" className="w-10 h-10 rounded object-contain bg-white/10 p-1" />
+          <div>
+            <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">Greater Bayelsa</p>
+            <p className="text-xs text-white/70 font-medium">Membership Identification</p>
+          </div>
+          <span className="ml-auto text-[10px] font-bold text-emerald-300 bg-emerald-900/60 px-2 py-0.5 rounded-full border border-emerald-700/50">
+            FULL MEMBER
+          </span>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 flex gap-4">
+          {member.photoUrl ? (
+            <img
+              src={`${baseUrl}/api/storage${member.photoUrl}`}
+              alt="Member"
+              className="w-20 h-24 rounded-xl object-cover border-2 border-white/20 shrink-0"
+              crossOrigin="anonymous"
+            />
+          ) : (
+            <div className="w-20 h-24 rounded-xl bg-white/10 flex items-center justify-center text-2xl font-bold text-white shrink-0 border-2 border-white/20">
+              {member.firstName[0]}{member.lastName[0]}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-bold text-lg leading-tight font-serif mb-1">
+              {member.firstName} {member.lastName}
+            </p>
+            <p className="text-emerald-300 text-xs font-bold uppercase tracking-wide mb-3">
+              {member.role.replace(/_/g, " ")}
+            </p>
+            <div className="space-y-1.5 text-xs text-white/80 font-medium">
+              {member.villageName && (
+                <p>📍 {member.villageName}{member.unitName ? ` · ${member.unitName}` : ""}</p>
+              )}
+              <p>📅 Inducted: {member.inductedAt ? format(new Date(member.inductedAt), "MMM d, yyyy") : "—"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 pb-5 flex items-center justify-between">
+          <div className="font-mono text-sm font-bold text-white/90 bg-black/30 px-3 py-1.5 rounded-lg border border-white/10">
+            {member.membershipCode}
+          </div>
+          <div className="flex gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="w-1.5 h-8 rounded-sm bg-emerald-400/40" style={{ height: `${8 + (i % 3) * 6}px` }} />
+            ))}
+          </div>
+          <p className="text-[9px] text-white/40 font-medium">SAGBAMA CONSTITUENCY ONE</p>
+        </div>
+      </div>
+
+      <Button onClick={downloadCard} variant="outline" className="w-full max-w-sm mx-auto flex font-bold h-10">
+        <Download className="w-4 h-4 mr-2" /> Download ID Card
+      </Button>
+    </div>
+  );
+}
 
 // Quick-access sections — shown as a card grid on the dashboard
 const MEMBER_SECTIONS = [
@@ -72,10 +182,16 @@ export function Dashboard() {
     );
   }
 
+  const { data: dues } = useGetMyDues({ query: { queryKey: ["/api/dues/me"] } });
+
   const isLeader = ["founder", "assistant", "village_head", "unit_leader", "secretary", "treasurer"].includes(member.role);
   const isHQ    = member.role === "founder" || member.role === "assistant";
   const recentUpdates  = updates?.slice(0, 5) || [];
   const upcomingEvents = events?.slice(0, 3) || [];
+
+  const duesPaid     = dues?.current?.paid ?? false;
+  const pipelineIdx  = getPipelineIdx(member as any, duesPaid);
+  const isInducted   = (member as any).inductionStatus === "inducted";
 
   const quickSections = [
     ...MEMBER_SECTIONS,
@@ -109,6 +225,81 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Membership Pipeline — only for regular members (not executives), or inducted members */}
+      {!isLeader && (
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Pipeline stepper */}
+          <div className="bg-card border rounded-3xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Membership Pipeline</h2>
+              <Link href="/induction" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+                Details <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <div className="space-y-2.5">
+              {PIPELINE_STAGES.map((stage, idx) => {
+                const isComplete = idx < pipelineIdx;
+                const isCurrent  = idx === pipelineIdx;
+                const isPending  = idx > pipelineIdx;
+                return (
+                  <div key={stage.key} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all ${
+                    isCurrent  ? "bg-primary/10 border border-primary/20" :
+                    isComplete ? "bg-emerald-50 border border-emerald-100" :
+                                 "bg-muted/20 border border-transparent"
+                  }`}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                      isComplete ? "bg-emerald-500 text-white" :
+                      isCurrent  ? "bg-primary text-white" :
+                                   "bg-muted text-muted-foreground"
+                    }`}>
+                      {isComplete ? <CheckCircle2 className="w-3 h-3" /> :
+                       isCurrent  ? <stage.icon className="w-3 h-3" /> :
+                                    <Lock className="w-2.5 h-2.5" />}
+                    </div>
+                    <p className={`text-xs font-bold flex-1 ${
+                      isCurrent ? "text-primary" : isComplete ? "text-emerald-700" : "text-muted-foreground/60"
+                    }`}>{stage.label}</p>
+                    {isCurrent && <span className="text-[9px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">NOW</span>}
+                    {isComplete && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ID card (inducted) or CTA to induction page */}
+          <div>
+            {isInducted ? (
+              <div className="space-y-4">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Digital ID Card</h2>
+                <MemberIdCard member={member} />
+              </div>
+            ) : (
+              <Link href="/induction">
+                <div className="h-full min-h-[200px] bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-3xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary/40 hover:shadow-md transition-all gap-4">
+                  <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center">
+                    <Award className="w-7 h-7 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-bold font-serif text-lg mb-1">Complete Your Induction</p>
+                    <p className="text-sm text-muted-foreground font-medium">
+                      {(member as any).inductionStatus === "pledge_submitted"
+                        ? "Pledge submitted — awaiting Village Head confirmation."
+                        : duesPaid
+                        ? "Upload your pledge video and ceremony photos."
+                        : "Pay your dues to unlock the induction upload."}
+                    </p>
+                  </div>
+                  <span className="text-xs font-bold text-primary flex items-center gap-1">
+                    Go to Induction <ChevronRight className="w-3 h-3" />
+                  </span>
+                </div>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Quick Access — all sections in one glanceable grid */}
       <div>

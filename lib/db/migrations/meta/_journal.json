@@ -8,6 +8,13 @@
       "when": 1786469210166,
       "tag": "0000_phase_one_v3",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786652215230,
+      "tag": "0001_exotic_supreme_intelligence",
+      "breakpoints": true
     }
   ]
 }

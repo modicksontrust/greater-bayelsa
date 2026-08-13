@@ -37,6 +37,7 @@ import { Calendar } from "@/pages/portal/calendar";
 import { Updates } from "@/pages/portal/updates";
 import { Feedback } from "@/pages/portal/feedback";
 import { Notifications } from "@/pages/portal/notifications";
+import { Induction } from "@/pages/portal/induction";
 
 // Admin Pages
 import { AdminRequests } from "@/pages/admin/requests";
@@ -412,6 +413,15 @@ function ClerkProviderWithRoutes() {
             <Show when="signed-in">
               <MemberRouteWrapper>
                 <DashboardLayout><Notifications /></DashboardLayout>
+              </MemberRouteWrapper>
+            </Show>
+            <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+          </Route>
+
+          <Route path="/induction">
+            <Show when="signed-in">
+              <MemberRouteWrapper>
+                <DashboardLayout><Induction /></DashboardLayout>
               </MemberRouteWrapper>
             </Show>
             <Show when="signed-out"><Redirect to="/sign-in" /></Show>

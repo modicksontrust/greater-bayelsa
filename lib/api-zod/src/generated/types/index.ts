@@ -33,6 +33,7 @@ export * from './healthStatus';
 export * from './hqRequest';
 export * from './hqRequestUpdate';
 export * from './hqRequestUpdateStatus';
+export * from './inductionUploadBody';
 export * from './listHqRequestsParams';
 export * from './listMeetingsParams';
 export * from './listMemberBirthdaysParams';

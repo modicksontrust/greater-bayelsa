@@ -41,6 +41,7 @@ import type {
   HealthStatus,
   HqRequest,
   HqRequestUpdate,
+  InductionUploadBody,
   ListHqRequestsParams,
   ListMeetingsParams,
   ListMemberBirthdaysParams,
@@ -1035,6 +1036,149 @@ export function useMatchVoter<TData = Awaited<ReturnType<typeof matchVoter>>, TE
 
 
 
+
+export const getInductionUploadMemberUrl = (id: number,) => {
+
+
+
+
+  return `/api/members/${id}/induction-upload`
+}
+
+/**
+ * @summary Submit pledge video and two ceremony photos (member, dues-gated)
+ */
+export const inductionUploadMember = async (id: number,
+    inductionUploadBody: InductionUploadBody, options?: Parameters<typeof customFetch>[1]): Promise<Member> => {
+
+  return customFetch<Member>(getInductionUploadMemberUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(inductionUploadBody)
+  }
+);}
+
+
+
+
+
+export const getInductionUploadMemberMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof inductionUploadMember>>, TError,{id: number;data: BodyType<InductionUploadBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof inductionUploadMember>>, TError,{id: number;data: BodyType<InductionUploadBody>}, TContext> => {
+
+const mutationKey = ['inductionUploadMember'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof inductionUploadMember>>, {id: number;data: BodyType<InductionUploadBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  inductionUploadMember(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type InductionUploadMemberMutationResult = NonNullable<Awaited<ReturnType<typeof inductionUploadMember>>>
+    export type InductionUploadMemberMutationBody = BodyType<InductionUploadBody>
+    export type InductionUploadMemberMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Submit pledge video and two ceremony photos (member, dues-gated)
+ */
+export const useInductionUploadMember = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof inductionUploadMember>>, TError,{id: number;data: BodyType<InductionUploadBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof inductionUploadMember>>,
+        TError,
+        {id: number;data: BodyType<InductionUploadBody>},
+        TContext
+      > => {
+      return useMutation(getInductionUploadMemberMutationOptions(options));
+    }
+
+export const getConfirmMemberInductionUrl = (id: number,) => {
+
+
+
+
+  return `/api/members/${id}/induction-confirm`
+}
+
+/**
+ * @summary Village Head confirms induction — activates Full Membership
+ */
+export const confirmMemberInduction = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<Member> => {
+
+  return customFetch<Member>(getConfirmMemberInductionUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getConfirmMemberInductionMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmMemberInduction>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof confirmMemberInduction>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['confirmMemberInduction'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmMemberInduction>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  confirmMemberInduction(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConfirmMemberInductionMutationResult = NonNullable<Awaited<ReturnType<typeof confirmMemberInduction>>>
+
+    export type ConfirmMemberInductionMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Village Head confirms induction — activates Full Membership
+ */
+export const useConfirmMemberInduction = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmMemberInduction>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof confirmMemberInduction>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getConfirmMemberInductionMutationOptions(options));
+    }
 
 export const getGetMemberUrl = (id: number,) => {
 

@@ -17,4 +17,6 @@ export const UploadUrlRequestPurpose = {
   attendance_video: 'attendance_video',
   receipt: 'receipt',
   general: 'general',
+  induction_video: 'induction_video',
+  induction_photo: 'induction_photo',
 } as const;

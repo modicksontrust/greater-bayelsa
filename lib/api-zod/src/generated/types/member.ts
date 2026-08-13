@@ -57,5 +57,14 @@ export interface Member {
   /** @nullable */
   unitName?: string | null;
   createdAt: string;
+  inductionStatus: string;
+  /** @nullable */
+  inductionVideoPath?: string | null;
+  /** @nullable */
+  inductionPhoto1Path?: string | null;
+  /** @nullable */
+  inductionPhoto2Path?: string | null;
+  /** @nullable */
+  inductedAt?: string | null;
   trainingCompletions?: TrainingCompletion[];
 }

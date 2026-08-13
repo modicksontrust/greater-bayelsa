@@ -167,6 +167,11 @@ export const GetMeResponse = zod.object({
   "villageName": zod.string().nullish(),
   "unitName": zod.string().nullish(),
   "createdAt": zod.string(),
+  "inductionStatus": zod.string(),
+  "inductionVideoPath": zod.string().nullish(),
+  "inductionPhoto1Path": zod.string().nullish(),
+  "inductionPhoto2Path": zod.string().nullish(),
+  "inductedAt": zod.string().nullish(),
   "trainingCompletions": zod.array(zod.object({
   "sessionId": zod.int(),
   "title": zod.string(),
@@ -229,6 +234,11 @@ export const UpdateMeResponse = zod.object({
   "villageName": zod.string().nullish(),
   "unitName": zod.string().nullish(),
   "createdAt": zod.string(),
+  "inductionStatus": zod.string(),
+  "inductionVideoPath": zod.string().nullish(),
+  "inductionPhoto1Path": zod.string().nullish(),
+  "inductionPhoto2Path": zod.string().nullish(),
+  "inductedAt": zod.string().nullish(),
   "trainingCompletions": zod.array(zod.object({
   "sessionId": zod.int(),
   "title": zod.string(),
@@ -280,6 +290,11 @@ export const ListMembersResponseItem = zod.object({
   "villageName": zod.string().nullish(),
   "unitName": zod.string().nullish(),
   "createdAt": zod.string(),
+  "inductionStatus": zod.string(),
+  "inductionVideoPath": zod.string().nullish(),
+  "inductionPhoto1Path": zod.string().nullish(),
+  "inductionPhoto2Path": zod.string().nullish(),
+  "inductedAt": zod.string().nullish(),
   "trainingCompletions": zod.array(zod.object({
   "sessionId": zod.int(),
   "title": zod.string(),
@@ -364,6 +379,11 @@ export const EnrollMemberResponse = zod.object({
   "villageName": zod.string().nullish(),
   "unitName": zod.string().nullish(),
   "createdAt": zod.string(),
+  "inductionStatus": zod.string(),
+  "inductionVideoPath": zod.string().nullish(),
+  "inductionPhoto1Path": zod.string().nullish(),
+  "inductionPhoto2Path": zod.string().nullish(),
+  "inductedAt": zod.string().nullish(),
   "trainingCompletions": zod.array(zod.object({
   "sessionId": zod.int(),
   "title": zod.string(),
@@ -424,6 +444,121 @@ export const MatchVoterResponse = zod.array(MatchVoterResponseItem)
 
 
 /**
+ * @summary Submit pledge video and two ceremony photos (member, dues-gated)
+ */
+export const InductionUploadMemberParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+
+
+
+
+
+export const InductionUploadMemberBody = zod.object({
+  "inductionVideoPath": zod.string().min(1),
+  "inductionPhoto1Path": zod.string().min(1),
+  "inductionPhoto2Path": zod.string().min(1)
+})
+
+export const InductionUploadMemberResponse = zod.object({
+  "id": zod.int(),
+  "membershipCode": zod.string(),
+  "role": zod.string(),
+  "status": zod.string(),
+  "membershipCategory": zod.string(),
+  "joinDate": zod.string().nullish(),
+  "firstName": zod.string(),
+  "lastName": zod.string(),
+  "gender": zod.string().nullish(),
+  "dateOfBirth": zod.string().nullish(),
+  "phone": zod.string(),
+  "whatsapp": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "photoUrl": zod.string().nullish(),
+  "vin": zod.string(),
+  "voterId": zod.int().nullish(),
+  "occupation": zod.string().nullish(),
+  "address": zod.string().nullish(),
+  "maritalStatus": zod.string().nullish(),
+  "nextOfKinName": zod.string().nullish(),
+  "nextOfKinPhone": zod.string().nullish(),
+  "cvUrl": zod.string().nullish(),
+  "bio": zod.string().nullish(),
+  "credentials": zod.string().nullish(),
+  "vettingStatus": zod.string().optional(),
+  "villageId": zod.int().nullish(),
+  "unitId": zod.int().nullish(),
+  "villageName": zod.string().nullish(),
+  "unitName": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "inductionStatus": zod.string(),
+  "inductionVideoPath": zod.string().nullish(),
+  "inductionPhoto1Path": zod.string().nullish(),
+  "inductionPhoto2Path": zod.string().nullish(),
+  "inductedAt": zod.string().nullish(),
+  "trainingCompletions": zod.array(zod.object({
+  "sessionId": zod.int(),
+  "title": zod.string(),
+  "skillArea": zod.string().nullish(),
+  "completedAt": zod.string().nullish()
+})).optional()
+})
+
+
+/**
+ * @summary Village Head confirms induction — activates Full Membership
+ */
+export const ConfirmMemberInductionParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ConfirmMemberInductionResponse = zod.object({
+  "id": zod.int(),
+  "membershipCode": zod.string(),
+  "role": zod.string(),
+  "status": zod.string(),
+  "membershipCategory": zod.string(),
+  "joinDate": zod.string().nullish(),
+  "firstName": zod.string(),
+  "lastName": zod.string(),
+  "gender": zod.string().nullish(),
+  "dateOfBirth": zod.string().nullish(),
+  "phone": zod.string(),
+  "whatsapp": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "photoUrl": zod.string().nullish(),
+  "vin": zod.string(),
+  "voterId": zod.int().nullish(),
+  "occupation": zod.string().nullish(),
+  "address": zod.string().nullish(),
+  "maritalStatus": zod.string().nullish(),
+  "nextOfKinName": zod.string().nullish(),
+  "nextOfKinPhone": zod.string().nullish(),
+  "cvUrl": zod.string().nullish(),
+  "bio": zod.string().nullish(),
+  "credentials": zod.string().nullish(),
+  "vettingStatus": zod.string().optional(),
+  "villageId": zod.int().nullish(),
+  "unitId": zod.int().nullish(),
+  "villageName": zod.string().nullish(),
+  "unitName": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "inductionStatus": zod.string(),
+  "inductionVideoPath": zod.string().nullish(),
+  "inductionPhoto1Path": zod.string().nullish(),
+  "inductionPhoto2Path": zod.string().nullish(),
+  "inductedAt": zod.string().nullish(),
+  "trainingCompletions": zod.array(zod.object({
+  "sessionId": zod.int(),
+  "title": zod.string(),
+  "skillArea": zod.string().nullish(),
+  "completedAt": zod.string().nullish()
+})).optional()
+})
+
+
+/**
  * @summary Get a member within scope
  */
 export const GetMemberParams = zod.object({
@@ -461,6 +596,11 @@ export const GetMemberResponse = zod.object({
   "villageName": zod.string().nullish(),
   "unitName": zod.string().nullish(),
   "createdAt": zod.string(),
+  "inductionStatus": zod.string(),
+  "inductionVideoPath": zod.string().nullish(),
+  "inductionPhoto1Path": zod.string().nullish(),
+  "inductionPhoto2Path": zod.string().nullish(),
+  "inductedAt": zod.string().nullish(),
   "trainingCompletions": zod.array(zod.object({
   "sessionId": zod.int(),
   "title": zod.string(),
@@ -535,6 +675,11 @@ export const UpdateMemberResponse = zod.object({
   "villageName": zod.string().nullish(),
   "unitName": zod.string().nullish(),
   "createdAt": zod.string(),
+  "inductionStatus": zod.string(),
+  "inductionVideoPath": zod.string().nullish(),
+  "inductionPhoto1Path": zod.string().nullish(),
+  "inductionPhoto2Path": zod.string().nullish(),
+  "inductedAt": zod.string().nullish(),
   "trainingCompletions": zod.array(zod.object({
   "sessionId": zod.int(),
   "title": zod.string(),
@@ -1316,7 +1461,7 @@ export const RequestUploadUrlBody = zod.object({
   "name": zod.string().min(1),
   "size": zod.int().min(1),
   "contentType": zod.string().min(1),
-  "purpose": zod.enum(['profile_photo', 'cv', 'meeting_photo', 'meeting_video', 'attendance_video', 'receipt', 'general']).default(requestUploadUrlBodyPurposeDefault)
+  "purpose": zod.enum(['profile_photo', 'cv', 'meeting_photo', 'meeting_video', 'attendance_video', 'receipt', 'general', 'induction_video', 'induction_photo']).default(requestUploadUrlBodyPurposeDefault)
 })
 
 
@@ -1331,7 +1476,7 @@ export const RequestUploadUrlResponse = zod.object({
   "name": zod.string().min(1),
   "size": zod.int().min(1),
   "contentType": zod.string().min(1),
-  "purpose": zod.enum(['profile_photo', 'cv', 'meeting_photo', 'meeting_video', 'attendance_video', 'receipt', 'general']).default(requestUploadUrlResponseMetadataPurposeDefault)
+  "purpose": zod.enum(['profile_photo', 'cv', 'meeting_photo', 'meeting_video', 'attendance_video', 'receipt', 'general', 'induction_video', 'induction_photo']).default(requestUploadUrlResponseMetadataPurposeDefault)
 }).optional()
 })
 

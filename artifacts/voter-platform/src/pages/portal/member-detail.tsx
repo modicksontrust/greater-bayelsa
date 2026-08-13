@@ -1,7 +1,8 @@
-import { useGetMember, useUpdateMember, useGetMe } from "@workspace/api-client-react";
+import { useGetMember, useUpdateMember, useGetMe, useConfirmMemberInduction, getGetMemberQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, useRoute } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MapPin, CheckCircle2, Shield, Calendar, Phone, Briefcase, FileText, GraduationCap } from "lucide-react";
+import { ArrowLeft, MapPin, CheckCircle2, Shield, Calendar, Phone, Briefcase, FileText, GraduationCap, Video, Image as ImageIcon, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,6 +13,7 @@ export function MemberDetail() {
   const [, params] = useRoute("/members/:id");
   const id = parseInt(params?.id || "0", 10);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: me } = useGetMe({ query: { queryKey: ["/api/me"] } });
   
@@ -28,6 +30,18 @@ export function MemberDetail() {
         toast({ title: "Member updated successfully." });
       }
     }
+  });
+
+  const confirmInduction = useConfirmMemberInduction({
+    mutation: {
+      onSuccess: () => {
+        toast({ title: "Induction confirmed!", description: "Member has been activated as a Full Member." });
+        queryClient.invalidateQueries({ queryKey: getGetMemberQueryKey(id) });
+      },
+      onError: (err: any) => {
+        toast({ title: "Confirmation failed", description: err.response?.data?.error || "Unknown error", variant: "destructive" });
+      },
+    },
   });
 
   if (isLoading || !member) {
@@ -246,6 +260,80 @@ export function MemberDetail() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Induction Review Panel — Village Head / HQ only, when pledge submitted */}
+      {me?.role === "village_head" &&
+        (member as any).inductionStatus === "pledge_submitted" && (
+        <div className="bg-card rounded-3xl border-2 border-amber-200 shadow-sm p-8">
+          <h2 className="text-lg font-bold font-serif mb-2 flex items-center gap-2">
+            <Award className="w-5 h-5 text-amber-600" /> Induction Review
+          </h2>
+          <p className="text-sm text-muted-foreground font-medium mb-6">
+            Review the pledge video and ceremony photos below, then confirm the induction to activate Full Membership.
+          </p>
+
+          {/* Pledge Video */}
+          {(member as any).inductionVideoPath && (
+            <div className="mb-6">
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                <Video className="w-3.5 h-3.5" /> Pledge Video
+              </p>
+              <div className="rounded-2xl overflow-hidden border bg-black aspect-video max-w-xl">
+                <video
+                  src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/storage${(member as any).inductionVideoPath}`}
+                  controls
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Ceremony Photos */}
+          <div className="mb-8">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+              <ImageIcon className="w-3.5 h-3.5" /> Ceremony Photos
+            </p>
+            <div className="grid grid-cols-2 gap-4 max-w-xl">
+              {[(member as any).inductionPhoto1Path, (member as any).inductionPhoto2Path]
+                .filter(Boolean)
+                .map((path: string, i: number) => (
+                  <div key={i} className="aspect-square rounded-2xl overflow-hidden border bg-muted">
+                    <img
+                      src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/storage${path}`}
+                      alt={`Ceremony photo ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          <Button
+            className="h-12 px-8 font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+            disabled={confirmInduction.isPending}
+            onClick={() => confirmInduction.mutate({ id: member.id })}
+          >
+            {confirmInduction.isPending ? "Confirming..." : "Confirm Induction — Activate Full Membership"}
+          </Button>
+        </div>
+      )}
+
+      {/* Inducted badge */}
+      {(member as any).inductionStatus === "inducted" && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+            <Award className="w-6 h-6 text-emerald-600" />
+          </div>
+          <div>
+            <p className="font-bold text-emerald-800">Full Member — Inducted</p>
+            <p className="text-sm text-emerald-700 font-medium">
+              {(member as any).inductedAt
+                ? format(new Date((member as any).inductedAt), "MMMM d, yyyy")
+                : "Induction date recorded"}
+            </p>
           </div>
         </div>
       )}

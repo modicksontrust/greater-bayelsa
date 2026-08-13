@@ -72,6 +72,10 @@ async function canReadObject(caller: User, objectPath: string): Promise<boolean>
       return sameVillage;
     case 'attendance_video':
       return sameVillage && EXECUTIVE_ROLES.includes(caller.role);
+    case 'induction_video':
+    case 'induction_photo':
+      // Induction media: village head only (HQ is covered by the early return above)
+      return sameVillage && caller.role === 'village_head';
     default:
       // cv | receipt | general — owner and HQ only
       return false;
@@ -112,7 +116,7 @@ router.post(
 
       // Enforce server-side size limits before issuing upload credentials.
       // Videos may be up to 2 GB; all other objects are capped at 50 MB.
-      const VIDEO_PURPOSES = ['meeting_video', 'attendance_video'];
+      const VIDEO_PURPOSES = ['meeting_video', 'attendance_video', 'induction_video'];
       const maxBytes = VIDEO_PURPOSES.includes(purpose ?? '') ? 2 * 1024 * 1024 * 1024 : 50 * 1024 * 1024;
       if (size > maxBytes) {
         res.status(400).json({

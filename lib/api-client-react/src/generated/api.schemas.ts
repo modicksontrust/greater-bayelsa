@@ -128,6 +128,15 @@ export interface VoterImportResult {
   skipped: number;
 }
 
+export interface InductionUploadBody {
+  /** @minLength 1 */
+  inductionVideoPath: string;
+  /** @minLength 1 */
+  inductionPhoto1Path: string;
+  /** @minLength 1 */
+  inductionPhoto2Path: string;
+}
+
 export interface TrainingCompletion {
   sessionId: number;
   title: string;
@@ -187,6 +196,15 @@ export interface Member {
   /** @nullable */
   unitName?: string | null;
   createdAt: string;
+  inductionStatus: string;
+  /** @nullable */
+  inductionVideoPath?: string | null;
+  /** @nullable */
+  inductionPhoto1Path?: string | null;
+  /** @nullable */
+  inductionPhoto2Path?: string | null;
+  /** @nullable */
+  inductedAt?: string | null;
   trainingCompletions?: TrainingCompletion[];
 }
 
@@ -838,6 +856,8 @@ export const UploadUrlRequestPurpose = {
   attendance_video: 'attendance_video',
   receipt: 'receipt',
   general: 'general',
+  induction_video: 'induction_video',
+  induction_photo: 'induction_photo',
 } as const;
 
 export interface UploadUrlRequest {

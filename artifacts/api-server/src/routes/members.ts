@@ -11,6 +11,7 @@ import {
   hqRequestsTable,
   feedbackReportsTable,
   uploadsTable,
+  duesPaymentsTable,
   trainingSessionsTable,
   trainingRegistrationsTable,
   type User,
@@ -28,6 +29,9 @@ import {
   UpdateMemberBody,
   UpdateMemberResponse,
   GetOverviewStatsResponse,
+  InductionUploadMemberBody,
+  InductionUploadMemberResponse,
+  ConfirmMemberInductionResponse,
 } from "@workspace/api-zod";
 import {
   requireAuth,
@@ -83,6 +87,7 @@ export async function serializeUser(u: User) {
     villageName: village?.name ?? null,
     unitName: unit?.name ?? null,
     createdAt: u.createdAt.toISOString(),
+    inductedAt: u.inductedAt?.toISOString() ?? null,
     trainingCompletions: completions.map((c) => ({
       ...c,
       completedAt: c.completedAt?.toISOString() ?? null,
@@ -166,6 +171,7 @@ router.get("/members", requireUser, async (req, res): Promise<void> => {
         villageName: r.villageName,
         unitName: r.unitName,
         createdAt: r.user.createdAt.toISOString(),
+        inductedAt: r.user.inductedAt?.toISOString() ?? null,
       })),
     ),
   );
@@ -441,6 +447,129 @@ router.post("/members", requireCoordinator, async (req, res): Promise<void> => {
   }
 
   res.status(201).json(EnrollMemberResponse.parse(await serializeUser(created)));
+});
+
+// POST /members/:id/induction-upload — member submits pledge video + 2 photos
+router.post("/members/:id/induction-upload", requireUser, async (req, res): Promise<void> => {
+  const id = Number(req.params.id);
+  const caller = req.user!;
+
+  // Only the member themselves may submit their own pledge
+  if (caller.id !== id) {
+    res.status(403).json({ error: "You may only submit your own induction pledge" });
+    return;
+  }
+
+  const parsed = InductionUploadMemberBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  // Gate: dues must be paid for the current period
+  const period = new Date().toISOString().slice(0, 7);
+  const [payment] = await db
+    .select({ id: duesPaymentsTable.id })
+    .from(duesPaymentsTable)
+    .where(and(eq(duesPaymentsTable.userId, id), eq(duesPaymentsTable.period, period)))
+    .limit(1);
+  if (!payment) {
+    res.status(400).json({ error: "Current-period dues must be paid before submitting induction pledge" });
+    return;
+  }
+
+  // Gate: must not have already submitted or been inducted
+  const [target] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!target) { res.status(404).json({ error: "Member not found" }); return; }
+  if (target.inductionStatus !== "not_started") {
+    res.status(400).json({ error: "Pledge already submitted or member already inducted" });
+    return;
+  }
+
+  // Gate: must be vetted
+  if (target.vettingStatus !== "vetted") {
+    res.status(400).json({ error: "Member must be vetted before submitting induction evidence" });
+    return;
+  }
+
+  // Validate distinct paths
+  const { inductionVideoPath, inductionPhoto1Path, inductionPhoto2Path } = parsed.data;
+  const paths = [inductionVideoPath, inductionPhoto1Path, inductionPhoto2Path];
+  if (new Set(paths).size !== 3) {
+    res.status(400).json({ error: "All three paths must be distinct files" });
+    return;
+  }
+
+  // Validate that each path is an upload owned by caller with the correct purpose
+  const uploads = await db
+    .select({ objectPath: uploadsTable.objectPath, purpose: uploadsTable.purpose })
+    .from(uploadsTable)
+    .where(and(inArray(uploadsTable.objectPath, paths), eq(uploadsTable.ownerId, caller.id)));
+
+  const byPath = Object.fromEntries(uploads.map((u) => [u.objectPath, u.purpose]));
+
+  if (byPath[inductionVideoPath] !== "induction_video") {
+    res.status(400).json({ error: "Pledge video must be uploaded with purpose 'induction_video'" });
+    return;
+  }
+  if (byPath[inductionPhoto1Path] !== "induction_photo") {
+    res.status(400).json({ error: "Ceremony photo 1 must be uploaded with purpose 'induction_photo'" });
+    return;
+  }
+  if (byPath[inductionPhoto2Path] !== "induction_photo") {
+    res.status(400).json({ error: "Ceremony photo 2 must be uploaded with purpose 'induction_photo'" });
+    return;
+  }
+
+  const [updated] = await db
+    .update(usersTable)
+    .set({
+      inductionStatus: "pledge_submitted",
+      inductionVideoPath: parsed.data.inductionVideoPath,
+      inductionPhoto1Path: parsed.data.inductionPhoto1Path,
+      inductionPhoto2Path: parsed.data.inductionPhoto2Path,
+    })
+    .where(eq(usersTable.id, id))
+    .returning();
+
+  res.json(InductionUploadMemberResponse.parse(await serializeUser(updated)));
+});
+
+// POST /members/:id/induction-confirm — village head / HQ confirms induction
+router.post("/members/:id/induction-confirm", requireUser, async (req, res): Promise<void> => {
+  const id = Number(req.params.id);
+  const caller = req.user!;
+
+  // Restricted to village_head only (not HQ-level roles — confirmation is a local VH responsibility)
+  if (caller.role !== "village_head") {
+    res.status(403).json({ error: "Only Village Heads may confirm inductions" });
+    return;
+  }
+
+  const scope = scopeCondition(caller);
+  const [target] = await db
+    .select()
+    .from(usersTable)
+    .where(scope ? and(eq(usersTable.id, id), scope) : eq(usersTable.id, id))
+    .limit(1);
+  if (!target) { res.status(404).json({ error: "Member not found or outside your scope" }); return; }
+
+  if (target.inductionStatus !== "pledge_submitted") {
+    res.status(400).json({ error: "Member has not submitted pledge evidence yet" });
+    return;
+  }
+
+  const [updated] = await db
+    .update(usersTable)
+    .set({
+      inductionStatus: "inducted",
+      inductedAt: new Date(),
+      status: "active",
+    })
+    .where(eq(usersTable.id, id))
+    .returning();
+
+  res.json(ConfirmMemberInductionResponse.parse(await serializeUser(updated)));
 });
 
 router.get("/members/:id", requireUser, async (req, res): Promise<void> => {

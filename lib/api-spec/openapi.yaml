@@ -269,6 +269,77 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Voter"
+  /members/{id}/induction-upload:
+    post:
+      operationId: inductionUploadMember
+      tags: [members]
+      summary: Submit pledge video and two ceremony photos (member, dues-gated)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InductionUploadBody"
+      responses:
+        "200":
+          description: Pledge media saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+        "400":
+          description: Missing fields or dues not paid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /members/{id}/induction-confirm:
+    post:
+      operationId: confirmMemberInduction
+      tags: [members]
+      summary: Village Head confirms induction — activates Full Membership
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Member inducted and activated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+        "400":
+          description: Pledge not yet submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /members/{id}:
     get:
       operationId: getMember
@@ -1186,6 +1257,14 @@ components:
         imported: { type: integer }
         skipped: { type: integer }
 
+    InductionUploadBody:
+      type: object
+      required: [inductionVideoPath, inductionPhoto1Path, inductionPhoto2Path]
+      properties:
+        inductionVideoPath: { type: string, minLength: 1 }
+        inductionPhoto1Path: { type: string, minLength: 1 }
+        inductionPhoto2Path: { type: string, minLength: 1 }
+
     Member:
       type: object
       required:
@@ -1200,6 +1279,7 @@ components:
           phone,
           vin,
           createdAt,
+          inductionStatus,
         ]
       properties:
         id: { type: integer }
@@ -1232,6 +1312,11 @@ components:
         villageName: { type: [string, "null"] }
         unitName: { type: [string, "null"] }
         createdAt: { type: string }
+        inductionStatus: { type: string }
+        inductionVideoPath: { type: [string, "null"] }
+        inductionPhoto1Path: { type: [string, "null"] }
+        inductionPhoto2Path: { type: [string, "null"] }
+        inductedAt: { type: [string, "null"] }
         trainingCompletions:
           type: array
           items:
@@ -1777,7 +1862,7 @@ components:
         contentType: { type: string, minLength: 1 }
         purpose:
           type: string
-          enum: [profile_photo, cv, meeting_photo, meeting_video, attendance_video, receipt, general]
+          enum: [profile_photo, cv, meeting_photo, meeting_video, attendance_video, receipt, general, induction_video, induction_photo]
           default: general
     UploadUrlResponse:
       type: object

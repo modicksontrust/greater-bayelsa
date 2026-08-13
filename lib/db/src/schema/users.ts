@@ -60,6 +60,14 @@ export const usersTable = pgTable("users", {
   unitId: integer("unit_id").references(() => unitsTable.id),
 
   enrolledById: integer("enrolled_by_id"),
+
+  // Induction pipeline
+  inductionStatus: text("induction_status").notNull().default("not_started"), // not_started | pledge_submitted | inducted
+  inductionVideoPath: text("induction_video_path"),
+  inductionPhoto1Path: text("induction_photo1_path"),
+  inductionPhoto2Path: text("induction_photo2_path"),
+  inductedAt: timestamp("inducted_at", { withTimezone: true }),
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

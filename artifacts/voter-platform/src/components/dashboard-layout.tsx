@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, UserPlus, Menu, UserCircle, 
   Briefcase, Bell, Settings, FileText, Database, Send, LogOut, ChevronRight,
   ClipboardList, ShieldCheck, MapPin, CheckSquare, MessageSquare, Calendar, Building, GraduationCap,
-  ChevronLeft,
+  ChevronLeft, Award,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { name: "Overview", path: "/dashboard", icon: LayoutDashboard },
         { name: "My Profile", path: "/profile", icon: UserCircle },
         { name: "Dues & Status", path: "/dues", icon: ShieldCheck },
+        { name: "Induction", path: "/induction", icon: Award },
         { name: "Member Development", path: "/training", icon: GraduationCap },
         { name: "Meetings", path: "/meetings", icon: Users },
         { name: "Calendar", path: "/calendar", icon: Calendar },
