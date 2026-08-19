@@ -119,7 +119,7 @@ export function Projects() {
       <div className="bg-muted/30 pt-16 pb-16 border-b">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center animate-in-stagger">
-            <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4 tracking-tight">Projects</h1>
+            <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4 tracking-tight">Projects / programmes</h1>
             <p className="text-lg text-muted-foreground leading-relaxed font-medium">
               Development work, measurable impact, and community voices from across Greater Bayelsa.
             </p>
