@@ -170,6 +170,7 @@ function CreatePostDialog() {
                     <SelectItem value="news">News</SelectItem>
                     <SelectItem value="impact">Impact Report</SelectItem>
                     <SelectItem value="development">Development</SelectItem>
+                    <SelectItem value="testimonial">Testimonial</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

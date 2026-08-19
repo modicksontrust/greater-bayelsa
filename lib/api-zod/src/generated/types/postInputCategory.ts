@@ -13,4 +13,5 @@ export const PostInputCategory = {
   news: 'news',
   impact: 'impact',
   development: 'development',
+  testimonial: 'testimonial',
 } as const;

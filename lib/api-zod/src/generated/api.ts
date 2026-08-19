@@ -1108,7 +1108,7 @@ export const ListPostsResponse = zod.array(ListPostsResponseItem)
 export const CreatePostBody = zod.object({
   "title": zod.string().min(1),
   "body": zod.string().min(1),
-  "category": zod.enum(['news', 'impact', 'development']),
+  "category": zod.enum(['news', 'impact', 'development', 'testimonial']),
   "imageUrl": zod.string().nullish()
 })
 
@@ -1149,7 +1149,7 @@ export const UpdatePostParams = zod.object({
 export const UpdatePostBody = zod.object({
   "title": zod.string().optional(),
   "body": zod.string().optional(),
-  "category": zod.enum(['news', 'impact', 'development']).optional(),
+  "category": zod.enum(['news', 'impact', 'development', 'testimonial']).optional(),
   "imageUrl": zod.string().nullish()
 })
 

@@ -1707,14 +1707,14 @@ components:
       properties:
         title: { type: string, minLength: 1 }
         body: { type: string, minLength: 1 }
-        category: { type: string, enum: [news, impact, development] }
+        category: { type: string, enum: [news, impact, development, testimonial] }
         imageUrl: { type: [string, "null"] }
     PostUpdate:
       type: object
       properties:
         title: { type: string }
         body: { type: string }
-        category: { type: string, enum: [news, impact, development] }
+        category: { type: string, enum: [news, impact, development, testimonial] }
         imageUrl: { type: [string, "null"] }
 
     CommunityUpdate:

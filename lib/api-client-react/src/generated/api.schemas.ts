@@ -652,6 +652,7 @@ export const PostInputCategory = {
   news: 'news',
   impact: 'impact',
   development: 'development',
+  testimonial: 'testimonial',
 } as const;
 
 export interface PostInput {
@@ -671,6 +672,7 @@ export const PostUpdateCategory = {
   news: 'news',
   impact: 'impact',
   development: 'development',
+  testimonial: 'testimonial',
 } as const;
 
 export interface PostUpdate {

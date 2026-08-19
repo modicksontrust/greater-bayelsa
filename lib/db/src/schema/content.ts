@@ -14,7 +14,7 @@ export const postsTable = pgTable("posts", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   body: text("body").notNull(),
-  category: text("category").notNull().default("news"), // news | impact | development
+  category: text("category").notNull().default("news"), // news | impact | development | testimonial
   imageUrl: text("image_url"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

@@ -13,4 +13,5 @@ export const PostUpdateCategory = {
   news: 'news',
   impact: 'impact',
   development: 'development',
+  testimonial: 'testimonial',
 } as const;
