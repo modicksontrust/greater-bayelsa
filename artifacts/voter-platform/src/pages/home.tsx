@@ -187,7 +187,7 @@ export function Home() {
               <p className="text-muted-foreground">Development briefings and impact reports from our communities.</p>
             </div>
             <Link href="/news" className="hidden sm:flex items-center text-primary font-bold hover:underline">
-              Browse News & Impact <ArrowRight className="ml-1 h-4 w-4" />
+              View All <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </div>
           
@@ -231,7 +231,7 @@ export function Home() {
           </div>
           <div className="mt-8 sm:hidden flex justify-center">
             <Link href="/news" className={buttonVariants({ variant: "outline", className: "w-full font-bold" })}>
-              Browse News & Impact
+              View All Updates
             </Link>
           </div>
         </div>
