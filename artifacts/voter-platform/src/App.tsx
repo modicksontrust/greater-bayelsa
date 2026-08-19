@@ -18,6 +18,7 @@ import { Home } from "@/pages/home";
 import { About } from "@/pages/about";
 import { Leaders } from "@/pages/leaders";
 import { News } from "@/pages/news";
+import { Projects } from "@/pages/projects";
 import { Eligibility } from "@/pages/eligibility";
 import { Register } from "@/pages/register";
 
@@ -277,6 +278,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/leaders" component={Leaders} />
           <Route path="/news">{() => <News />}</Route>
           <Route path="/news/:id">{() => <News detail />}</Route>
+          <Route path="/projects" component={Projects} />
           <Route path="/eligibility" component={Eligibility} />
           <Route path="/register" component={Register} />
           

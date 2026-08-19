@@ -19,16 +19,16 @@ export function News({ detail = false }: { detail?: boolean }) {
 }
 
 function NewsList() {
-  const { data: posts, isLoading } = useListPosts({});
+  const { data: posts, isLoading } = useListPosts({ category: "news" });
 
   return (
     <PublicLayout>
       <div className="bg-muted/30 pt-16 pb-16 border-b">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center animate-in-stagger">
-            <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4 tracking-tight">News & Impact</h1>
+            <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4 tracking-tight">News</h1>
             <p className="text-lg text-muted-foreground leading-relaxed font-medium">
-              Official dispatches, community development reports, and institutional updates.
+              Official dispatches and announcements from Greater Bayelsa.
             </p>
           </div>
         </div>
@@ -52,7 +52,7 @@ function NewsList() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts?.map((post) => (
-              <Link key={post.id} href={`/news/${post.id}`} className="group block h-full">
+            <Link key={post.id} href={`/news/${post.id}`} className="group block h-full">
                 <div className="bg-card h-full rounded-2xl border shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-all duration-300 hover:-translate-y-1">
                   {post.imageUrl ? (
                     <div className="h-56 overflow-hidden bg-muted">

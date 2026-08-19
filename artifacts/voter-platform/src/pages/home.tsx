@@ -186,7 +186,7 @@ export function Home() {
               <h2 className="text-3xl font-bold font-serif mb-2">Institutional Updates</h2>
               <p className="text-muted-foreground">Development briefings and impact reports from our communities.</p>
             </div>
-            <Link href="/news" className="hidden sm:flex items-center text-primary font-bold hover:underline">
+            <Link href="/projects" className="hidden sm:flex items-center text-primary font-bold hover:underline">
               View All <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </div>
@@ -230,7 +230,7 @@ export function Home() {
             )}
           </div>
           <div className="mt-8 sm:hidden flex justify-center">
-            <Link href="/news" className={buttonVariants({ variant: "outline", className: "w-full font-bold" })}>
+            <Link href="/projects" className={buttonVariants({ variant: "outline", className: "w-full font-bold" })}>
               View All Updates
             </Link>
           </div>

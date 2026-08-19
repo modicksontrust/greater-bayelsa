@@ -18,11 +18,12 @@ export function PublicLayout({ children }: PublicLayoutProps) {
     { name: "Home", path: "/" },
     { name: "About", path: "/about" },
     { name: "Leaders", path: "/leaders" },
-    { name: "News / Projects", path: "/news" },
+    { name: "News", path: "/news" },
+    { name: "Projects", path: "/projects" },
     { name: "Eligibility", path: "/eligibility" },
   ];
   const priorityNavItems = navItems.filter((item) =>
-    ["/about", "/news"].includes(item.path),
+    ["/about", "/news", "/projects"].includes(item.path),
   );
 
   return (
@@ -315,7 +316,12 @@ export function PublicLayout({ children }: PublicLayoutProps) {
               <ul className="space-y-4 text-sm">
                 <li>
                   <Link href="/news" className="hover:text-accent transition-colors font-medium">
-                    News & Impact
+                    News
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/projects" className="hover:text-accent transition-colors font-medium">
+                    Projects
                   </Link>
                 </li>
                 <li>
