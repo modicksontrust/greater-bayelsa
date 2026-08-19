@@ -18,9 +18,12 @@ export function PublicLayout({ children }: PublicLayoutProps) {
     { name: "Home", path: "/" },
     { name: "About", path: "/about" },
     { name: "Leaders", path: "/leaders" },
-    { name: "News & Impact", path: "/news" },
+    { name: "News / Projects", path: "/news" },
     { name: "Eligibility", path: "/eligibility" },
   ];
+  const priorityNavItems = navItems.filter((item) =>
+    ["/about", "/news"].includes(item.path),
+  );
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-background selection:bg-primary/20">
@@ -59,8 +62,30 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             </Link>
           </div>
 
-          {/* Desktop Nav — hidden below lg */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-7">
+          {/* Priority Nav — remains visible at tablet widths */}
+          <nav className="hidden md:flex xl:hidden items-center gap-3">
+            {priorityNavItems.map((item) => {
+              const isActive =
+                location === item.path ||
+                (item.path !== "/" && location.startsWith(item.path));
+              return (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`text-xs sm:text-sm font-semibold transition-colors hover:text-primary whitespace-nowrap ${
+                    isActive
+                      ? "text-primary border-b-2 border-primary pb-1 -mb-1"
+                      : "text-foreground/70"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Full Desktop Nav — shown on wide screens */}
+          <nav className="hidden xl:flex items-center gap-5 xl:gap-7">
             {navItems.map((item) => {
               const isActive =
                 location === item.path ||
@@ -114,8 +139,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
               </Link>
             </Show>
 
-            {/* Hamburger — hidden on lg+ where full nav is shown */}
-            <div className="lg:hidden">
+            {/* Hamburger — hidden on xl+ where full nav is shown */}
+            <div className="xl:hidden">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 <Button
