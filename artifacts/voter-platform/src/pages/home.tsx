@@ -56,8 +56,11 @@ const ROLE_DASHBOARDS = [
 ];
 
 export function Home() {
-  const { data: posts } = useListPosts({ category: "news" });
-  const recentNews = posts?.slice(0, 3) || [];
+  const { data: impactPosts } = useListPosts({ category: "impact" });
+  const { data: developmentPosts } = useListPosts({ category: "development" });
+  const institutionalUpdates = [...(impactPosts ?? []), ...(developmentPosts ?? [])]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3);
 
   return (
     <PublicLayout>
@@ -181,16 +184,16 @@ export function Home() {
           <div className="flex justify-between items-end mb-12">
             <div>
               <h2 className="text-3xl font-bold font-serif mb-2">Institutional Updates</h2>
-              <p className="text-muted-foreground">Latest news and development reports from our communities.</p>
+              <p className="text-muted-foreground">Development briefings and impact reports from our communities.</p>
             </div>
             <Link href="/news" className="hidden sm:flex items-center text-primary font-bold hover:underline">
-              View All <ArrowRight className="ml-1 h-4 w-4" />
+              Browse News & Impact <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </div>
           
           <div className="grid md:grid-cols-3 gap-6">
-            {recentNews.length > 0 ? (
-              recentNews.map(post => (
+            {institutionalUpdates.length > 0 ? (
+              institutionalUpdates.map(post => (
                 <Link key={post.id} href={`/news/${post.id}`} className="group block h-full">
                   <div className="bg-card h-full rounded-2xl border shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow">
                     {post.imageUrl ? (
@@ -207,14 +210,14 @@ export function Home() {
                         <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded">
                           {post.category}
                         </span>
-                        <span className="text-xs text-muted-foreground font-medium">
+                         <span className="text-xs text-muted-foreground font-medium">
                           {new Date(post.createdAt).toLocaleDateString()}
                         </span>
                       </div>
                       <h3 className="text-xl font-bold font-serif mb-2 group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                       <p className="text-muted-foreground text-sm line-clamp-3 mb-4 flex-1">{post.body}</p>
                       <div className="flex items-center text-primary font-bold text-sm">
-                        Read Report <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                         Read Briefing <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </div>
                     </div>
                   </div>
@@ -222,13 +225,13 @@ export function Home() {
               ))
             ) : (
               <div className="col-span-3 text-center py-12 bg-card rounded-2xl border border-dashed">
-                <p className="text-muted-foreground font-medium">No recent updates.</p>
+                <p className="text-muted-foreground font-medium">No impact or development reports yet.</p>
               </div>
             )}
           </div>
           <div className="mt-8 sm:hidden flex justify-center">
             <Link href="/news" className={buttonVariants({ variant: "outline", className: "w-full font-bold" })}>
-              View All Updates
+              Browse News & Impact
             </Link>
           </div>
         </div>
