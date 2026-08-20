@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useListPosts } from "@workspace/api-client-react";
 import { PublicLayout } from "@/components/public-layout";
+import { getContentPreview } from "@/lib/content-links";
 
 const ROLE_DASHBOARDS = [
   {
@@ -215,7 +216,7 @@ export function Home() {
                         </span>
                       </div>
                       <h3 className="text-xl font-bold font-serif mb-2 group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
-                      <p className="text-muted-foreground text-sm line-clamp-3 mb-4 flex-1">{post.body}</p>
+                      <p className="text-muted-foreground text-sm line-clamp-3 mb-4 flex-1">{getContentPreview(post.body)}</p>
                       <div className="flex items-center text-primary font-bold text-sm">
                          Read Briefing <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </div>

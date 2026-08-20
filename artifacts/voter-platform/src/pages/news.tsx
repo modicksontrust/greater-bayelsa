@@ -6,6 +6,7 @@ import { ArrowLeft, BookOpen, Calendar, Tag, ArrowRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getContentPreview, renderContentText } from "@/lib/content-links";
 
 function getPostImageUrls(post: { imageUrl?: string | null; imageUrls?: string[] | null }) {
   return Array.from(
@@ -84,7 +85,7 @@ function NewsList() {
                       </span>
                     </div>
                     <h3 className="text-xl font-bold font-serif mb-3 group-hover:text-primary transition-colors leading-snug">{post.title}</h3>
-                    <p className="text-muted-foreground text-sm line-clamp-3 mb-6 flex-1 leading-relaxed">{post.body}</p>
+                    <p className="text-muted-foreground text-sm line-clamp-3 mb-6 flex-1 leading-relaxed">{getContentPreview(post.body)}</p>
                     <div className="flex items-center text-primary font-bold text-sm">
                       Read Full Report <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </div>
@@ -205,7 +206,7 @@ function NewsDetail({ id }: { id: number }) {
           
           <div className="prose prose-lg md:prose-xl prose-stone max-w-none">
             {post.body.split('\n').map((paragraph, i) => (
-              paragraph ? <p key={i} className="leading-relaxed text-foreground/80">{paragraph}</p> : <br key={i} />
+              paragraph ? <p key={i} className="leading-relaxed text-foreground/80">{renderContentText(paragraph)}</p> : <br key={i} />
             ))}
           </div>
 

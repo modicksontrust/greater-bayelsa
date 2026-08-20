@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { ArrowRight, BookOpen, Calendar, Quote } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { getContentPreview } from "@/lib/content-links";
 
 type ContentPost = {
   id: number;
@@ -57,7 +58,7 @@ function ReportCards({ posts, emptyMessage }: { posts: ContentPost[]; emptyMessa
                 {post.title}
               </h3>
               <p className="text-muted-foreground text-sm line-clamp-3 mb-6 flex-1 leading-relaxed">
-                {post.body}
+                {getContentPreview(post.body)}
               </p>
               <div className="flex items-center text-primary font-bold text-sm">
                 Read More
