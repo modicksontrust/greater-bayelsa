@@ -212,7 +212,7 @@ function NewsDetail({ id }: { id: number }) {
           {galleryImages.length > 1 && (
             <section className="mt-12" aria-labelledby="story-gallery-heading">
               <h2 id="story-gallery-heading" className="text-2xl font-bold font-serif mb-5">
-                From the Training
+                Story Gallery
               </h2>
               <div className="grid sm:grid-cols-2 gap-5">
                 {galleryImages.map((imageUrl, index) => (
