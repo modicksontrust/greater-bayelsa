@@ -1,6 +1,7 @@
 import { useState, ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { Menu, LogIn, Shield, Users, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { FaFacebookF } from "react-icons/fa";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Show, useClerk } from "@clerk/react";
@@ -286,6 +287,15 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 A serious, credible civic institution developing a disciplined leadership pipeline from
                 the grassroots of Sagbama Constituency One.
               </p>
+              <a
+                href="https://www.facebook.com/share/18nzYayndh/?mibextid=wwXIfr"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Greater Bayelsa on Facebook"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:border-accent hover:bg-accent hover:text-[#0f3d26] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                <FaFacebookF className="h-4 w-4" aria-hidden="true" />
+              </a>
             </div>
             <div className="md:col-span-2">
               <h3 className="font-bold mb-6 font-serif text-accent uppercase tracking-wider text-sm">
