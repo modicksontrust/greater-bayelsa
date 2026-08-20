@@ -14,6 +14,7 @@ import {
   duesPaymentsTable,
   trainingSessionsTable,
   trainingRegistrationsTable,
+  notificationsTable,
   type User,
 } from "@workspace/db";
 import {
@@ -573,6 +574,14 @@ router.post("/members/:id/induction-confirm", requireUser, async (req, res): Pro
     })
     .where(eq(usersTable.id, id))
     .returning();
+
+  // Notify the member that their induction has been confirmed
+  await db.insert(notificationsTable).values({
+    userId: id,
+    kind: "induction_confirmed",
+    title: "Induction Confirmed 🎉",
+    body: `Congratulations! Your induction into the Greater Bayelsa Movement has been confirmed by your Village Head. Welcome as a full member.`,
+  });
 
   res.json(ConfirmMemberInductionResponse.parse(await serializeUser(updated)));
 });
