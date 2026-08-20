@@ -15,4 +15,6 @@ export interface PostInput {
   category: PostInputCategory;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  imageUrls?: string[] | null;
 }

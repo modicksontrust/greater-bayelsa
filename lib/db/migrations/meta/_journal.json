@@ -15,6 +15,13 @@
       "when": 1786652215230,
       "tag": "0001_exotic_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787222411596,
+      "tag": "0002_natural_mandarin",
+      "breakpoints": true
     }
   ]
 }

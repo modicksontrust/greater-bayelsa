@@ -1093,6 +1093,7 @@ export const ListPostsResponseItem = zod.object({
   "body": zod.string(),
   "category": zod.string(),
   "imageUrl": zod.string().nullish(),
+  "imageUrls": zod.array(zod.string()).nullish(),
   "createdAt": zod.string()
 })
 export const ListPostsResponse = zod.array(ListPostsResponseItem)
@@ -1109,7 +1110,8 @@ export const CreatePostBody = zod.object({
   "title": zod.string().min(1),
   "body": zod.string().min(1),
   "category": zod.enum(['news', 'impact', 'development', 'testimonial']),
-  "imageUrl": zod.string().nullish()
+  "imageUrl": zod.string().nullish(),
+  "imageUrls": zod.array(zod.string()).nullish()
 })
 
 export const CreatePostResponse = zod.object({
@@ -1118,6 +1120,7 @@ export const CreatePostResponse = zod.object({
   "body": zod.string(),
   "category": zod.string(),
   "imageUrl": zod.string().nullish(),
+  "imageUrls": zod.array(zod.string()).nullish(),
   "createdAt": zod.string()
 })
 
@@ -1135,6 +1138,7 @@ export const GetPostResponse = zod.object({
   "body": zod.string(),
   "category": zod.string(),
   "imageUrl": zod.string().nullish(),
+  "imageUrls": zod.array(zod.string()).nullish(),
   "createdAt": zod.string()
 })
 
@@ -1150,7 +1154,8 @@ export const UpdatePostBody = zod.object({
   "title": zod.string().optional(),
   "body": zod.string().optional(),
   "category": zod.enum(['news', 'impact', 'development', 'testimonial']).optional(),
-  "imageUrl": zod.string().nullish()
+  "imageUrl": zod.string().nullish(),
+  "imageUrls": zod.array(zod.string()).nullish()
 })
 
 export const UpdatePostResponse = zod.object({
@@ -1159,6 +1164,7 @@ export const UpdatePostResponse = zod.object({
   "body": zod.string(),
   "category": zod.string(),
   "imageUrl": zod.string().nullish(),
+  "imageUrls": zod.array(zod.string()).nullish(),
   "createdAt": zod.string()
 })
 

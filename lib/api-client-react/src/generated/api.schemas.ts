@@ -642,6 +642,8 @@ export interface Post {
   category: string;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  imageUrls?: string[] | null;
   createdAt: string;
 }
 
@@ -663,6 +665,8 @@ export interface PostInput {
   category: PostInputCategory;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  imageUrls?: string[] | null;
 }
 
 export type PostUpdateCategory = typeof PostUpdateCategory[keyof typeof PostUpdateCategory];
@@ -681,6 +685,8 @@ export interface PostUpdate {
   category?: PostUpdateCategory;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  imageUrls?: string[] | null;
 }
 
 export interface CommunityUpdate {

@@ -1700,6 +1700,7 @@ components:
         body: { type: string }
         category: { type: string }
         imageUrl: { type: [string, "null"] }
+        imageUrls: { type: [array, "null"], items: { type: string } }
         createdAt: { type: string }
     PostInput:
       type: object
@@ -1709,6 +1710,7 @@ components:
         body: { type: string, minLength: 1 }
         category: { type: string, enum: [news, impact, development, testimonial] }
         imageUrl: { type: [string, "null"] }
+        imageUrls: { type: [array, "null"], items: { type: string } }
     PostUpdate:
       type: object
       properties:
@@ -1716,6 +1718,7 @@ components:
         body: { type: string }
         category: { type: string, enum: [news, impact, development, testimonial] }
         imageUrl: { type: [string, "null"] }
+        imageUrls: { type: [array, "null"], items: { type: string } }
 
     CommunityUpdate:
       type: object

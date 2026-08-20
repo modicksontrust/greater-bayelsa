@@ -16,6 +16,7 @@ export const postsTable = pgTable("posts", {
   body: text("body").notNull(),
   category: text("category").notNull().default("news"), // news | impact | development | testimonial
   imageUrl: text("image_url"),
+  imageUrls: text("image_urls").array(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

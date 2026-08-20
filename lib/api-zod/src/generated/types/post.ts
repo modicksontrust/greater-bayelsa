@@ -13,5 +13,7 @@ export interface Post {
   category: string;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  imageUrls?: string[] | null;
   createdAt: string;
 }

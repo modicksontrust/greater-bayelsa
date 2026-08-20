@@ -3,3 +3,4 @@
 - [SVG logos via img](svg-img-external-refs.md) — SVGs used in `<img>` can't load external files; embed rasters as base64 data URIs or they render blank.
 - [Orval operationId collisions](orval-operationid-collisions.md) — component schema names must not collide with operationId-derived zod const names or codegen breaks.
 - [gpt-5.6-terra + tools](openai-terra-function-tools.md) — chat completions with function tools require `reasoning_effort: "none"` on this model.
+- [Development schema sync](development-schema-sync.md) — if Drizzle migration replay fails without details, use `db push` for the safe dev schema diff and retain the generated migration for publish.

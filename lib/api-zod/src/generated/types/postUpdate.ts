@@ -13,4 +13,6 @@ export interface PostUpdate {
   category?: PostUpdateCategory;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  imageUrls?: string[] | null;
 }

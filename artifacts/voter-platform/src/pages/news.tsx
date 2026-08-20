@@ -7,6 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+function getPostImageUrls(post: { imageUrl?: string | null; imageUrls?: string[] | null }) {
+  return Array.from(
+    new Set([post.imageUrl, ...(post.imageUrls ?? [])].filter((url): url is string => Boolean(url))),
+  );
+}
+
 export function News({ detail = false }: { detail?: boolean }) {
   const [match, params] = useRoute("/news/:id");
   const id = detail && match ? parseInt(params.id, 10) : null;
@@ -137,13 +143,16 @@ function NewsDetail({ id }: { id: number }) {
     );
   }
 
+  const galleryImages = getPostImageUrls(post);
+  const coverImage = galleryImages[0];
+
   return (
     <PublicLayout>
       <article className="pb-24">
-        {post.imageUrl ? (
+        {coverImage ? (
           <div className="w-full h-[40vh] md:h-[50vh] relative bg-muted">
             <img 
-              src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/storage${post.imageUrl}`} 
+              src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/storage${coverImage}`} 
               alt={post.title} 
               className="w-full h-full object-cover"
             />
@@ -186,7 +195,7 @@ function NewsDetail({ id }: { id: number }) {
         )}
 
         <div className="container mx-auto px-4 md:px-6 max-w-3xl mt-12 md:mt-16">
-          {!post.imageUrl && (
+          {!coverImage && (
             <div className="hidden md:block mb-8">
               <Link href="/news" className="inline-flex items-center text-muted-foreground hover:text-foreground font-medium transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-2" /> Back to News
@@ -199,6 +208,24 @@ function NewsDetail({ id }: { id: number }) {
               paragraph ? <p key={i} className="leading-relaxed text-foreground/80">{paragraph}</p> : <br key={i} />
             ))}
           </div>
+
+          {galleryImages.length > 1 && (
+            <section className="mt-12" aria-labelledby="story-gallery-heading">
+              <h2 id="story-gallery-heading" className="text-2xl font-bold font-serif mb-5">
+                From the Training
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-5">
+                {galleryImages.map((imageUrl, index) => (
+                  <img
+                    key={imageUrl}
+                    src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/storage${imageUrl}`}
+                    alt={`${post.title} — photo ${index + 1}`}
+                    className="w-full aspect-[4/3] object-cover rounded-2xl border shadow-sm"
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
           <div className="mt-16 pt-8 border-t flex justify-between items-center">
             <div className="flex items-center text-muted-foreground font-medium">
