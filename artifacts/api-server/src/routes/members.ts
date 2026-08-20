@@ -492,7 +492,12 @@ router.post("/members/:id/induction-upload", requireUser, async (req, res): Prom
     return;
   }
 
-  // Validate distinct paths
+  // Validate distinct paths.
+  // Each slot (video, photo1, photo2) must reference a different object. Without
+  // this check a member could reuse a single file they own across multiple slots
+  // (e.g. photo1 === photo2), bypassing the intent that each slot captures a
+  // distinct piece of ceremony evidence. The ownership query below looks up each
+  // path individually, so it would not catch duplicates on its own.
   const { inductionVideoPath, inductionPhoto1Path, inductionPhoto2Path } = parsed.data;
   const paths = [inductionVideoPath, inductionPhoto1Path, inductionPhoto2Path];
   if (new Set(paths).size !== 3) {
